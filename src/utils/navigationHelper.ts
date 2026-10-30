@@ -17,11 +17,36 @@ export function navigateToObject(
   const target = findVertexByObjectId(selectedObjectId);
   if (!target) {
     console.error("Target not found");
-    toast.error("Target not found");
+    toast.error("Local de destino não encontrado na malha de navegação.");
     return;
   }
 
-  const shortestPath = graph.calculateShortestPath(navigation.start, target.id);
+  // Se o ponto de partida atual não existir na lista ou não for um ponto de localização válido,
+  // usa o primeiro ponto de localização do usuário (não v_grid_) ou qualquer vértice válido
+  let startId = navigation.start;
+  let startVertex = graphData.vertices.find(
+    (v) => v.id === startId && !v.id.startsWith("v_grid_") && !v.id.startsWith("v_door_") && !v.id.startsWith("v_junc_") && v.objectName === null
+  );
+  if (!startVertex) {
+    startVertex =
+      graphData.vertices.find(
+        (v) =>
+          v.objectName === null &&
+          !v.id.startsWith("v_grid_") &&
+          !v.id.startsWith("v_door_") &&
+          !v.id.startsWith("v_junc_")
+      ) || graphData.vertices.find((v) => v.objectName === null);
+    if (startVertex) {
+      startId = startVertex.id;
+    }
+  }
+
+  const shortestPath = graph.calculateShortestPath(startId, target.id);
+  if (shortestPath.length === 0) {
+    toast.warning("Não foi possível traçar uma rota até este local.");
+    return;
+  }
+
   const pathString = shortestPath
     .slice(1)
     .map((vertexId) => {
@@ -30,15 +55,15 @@ export function navigateToObject(
     })
     .join(" ");
 
-  const startVertex = graphData.vertices.find((v) => v.id === navigation.start);
   const navigationRoutePath = document.getElementById("navigation-route");
   if (navigationRoutePath && startVertex) {
     navigationRoutePath.setAttribute(
       "d",
       `M${startVertex.cx} ${startVertex.cy} ${pathString}`
     );
-    console.log("navigationRoutePath", navigationRoutePath);
     navigationRoutePath.classList.remove("path-once", "path-active");
+    // Força reflow para reiniciar animação se clicar novamente
+    void navigationRoutePath.getBoundingClientRect();
     navigationRoutePath.classList.add("path-once");
     navigationRoutePath.addEventListener(
       "animationend",
@@ -52,6 +77,7 @@ export function navigateToObject(
 
   setNavigation((prevNavigation) => ({
     ...prevNavigation,
+    start: startId,
     end: selectedObjectId,
   }));
 }

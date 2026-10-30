@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc && NODE_ENV=production vite build --emptyOutDir",
+    "build": "tsc && vite build --emptyOutDir",
     "preview": "vite preview",
     "devnhost": "vite --host"
   },

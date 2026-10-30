@@ -19,7 +19,7 @@ function MobileRouteDetails() {
       </div>
       <div className="bg-gray-200 text-gray-900 px-3 py-1 center w-fit rounded-md text-sm font-semibold m-3">
         <TbRoute className="inline-block mr-1" />
-        {walkingTime} seconds away - {rightRouteLength} meters
+        {walkingTime} seg de caminhada • {rightRouteLength} metros
       </div>
     </div>
   );

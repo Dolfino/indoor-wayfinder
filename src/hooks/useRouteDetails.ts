@@ -23,11 +23,8 @@ export function useRouteDetails() {
     const fetchObject = async () => {
       try {
         if (!navigation.end) return;
-        objects.forEach((obj) => {
-          if (obj.name === navigation.end) {
-            setObject(obj);
-          }
-        });
+        const found = objects.find((obj) => obj.name === navigation.end);
+        if (found) setObject(found);
       } catch (error) {
         console.error(`Error fetching object by ID: ${navigation.end}`, error);
       }
@@ -38,8 +35,8 @@ export function useRouteDetails() {
         "navigation-route"
       ) as SVGPathElement | null;
       const routeLength = navigationRoutePath?.getTotalLength() || 0;
-      const mapRatio = 20; // fictional ratio
-      const walkingSpeed = 1.4; // m/s
+      const mapRatio = 26; // ~26 pixels = 1 meter on Centro Fashion map
+      const walkingSpeed = 1.3; // 1.3 m/s walking speed
       const rightRouteLength = Math.round((routeLength / mapRatio) * 10) / 10;
       const walkingTime = Math.round(rightRouteLength / walkingSpeed);
 
@@ -48,7 +45,7 @@ export function useRouteDetails() {
 
     fetchObject();
     calculateRouteDetails();
-  }, [navigation.end]);
+  }, [navigation.end, objects]);
 
   function handleLeave() {
     resetEdges();
@@ -58,5 +55,9 @@ export function useRouteDetails() {
     }));
   }
 
-  return { object, ...routeDetails, handleLeave };
+  return {
+    object,
+    ...routeDetails,
+    handleLeave,
+  };
 }

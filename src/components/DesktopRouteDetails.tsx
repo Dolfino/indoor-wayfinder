@@ -17,7 +17,7 @@ function DesktopRouteDetails() {
         </div>
         <div className="flex flex-col h-full justify-center px-4">
           <p className="text-gray-500 text-xs">
-            {rightRouteLength} m, {walkingTime} sek
+            {rightRouteLength} m • {walkingTime} seg
           </p>
         </div>
         <div className="h-12 w-12 center flex-none rounded-r bg-white text-blue-500 text-xs">

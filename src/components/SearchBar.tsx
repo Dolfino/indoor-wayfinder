@@ -145,7 +145,7 @@ function SearchBar() {
             className={`h-12 p-4 w-full flex-none text-gray-900 text-sm md:text-md ${
               isInputInvalid && "input-error"
             } `}
-            placeholder="Search"
+            placeholder="Buscar loja, box ou serviço..."
             value={inputValue}
             onChange={handleInputChange}
             onBlur={handleInputBlur}
@@ -180,7 +180,7 @@ function SearchBar() {
                   className="p-2 text-gray-500 text-sm md:text-md"
                   key={"no-result"}
                 >
-                  No results found
+                  Nenhum local encontrado
                 </li>
               )}
             </ul>
@@ -188,7 +188,7 @@ function SearchBar() {
         </div>
 
         <div className="">
-          <Tooltip content="Search" className="bg-blue-500">
+          <Tooltip content="Traçar rota" className="bg-blue-500">
             <button
               className="h-12 w-12 flex flex-none center justify-center rounded-r bg-blue-500 text-white"
               onClick={() => handleSearch(inputValue)}

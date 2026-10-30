@@ -1,10 +1,11 @@
-import { graphData, VertexData } from "@/store/graphData";
+import { graphData, VertexData, GraphData } from "@/store/graphData";
 
 type NodeId = string;
 interface Node {
   id: NodeId;
   priority: number;
 }
+
 class PriorityQueue {
   values: Node[];
 
@@ -30,6 +31,7 @@ class PriorityQueue {
       idx = parentIdx;
     }
   }
+
   dequeue() {
     const min = this.values[0];
     const end = this.values.pop();
@@ -39,6 +41,7 @@ class PriorityQueue {
     }
     return min;
   }
+
   sinkDown() {
     let idx = 0;
     const length = this.values.length;
@@ -82,23 +85,42 @@ class DijkstraCalculator {
     this.adjacencyList = {};
   }
 
+  loadGraph(data: GraphData) {
+    this.adjacencyList = {};
+    data.vertices.forEach((vertex) => {
+      this.addVertex(vertex.id);
+    });
+
+    data.edges.forEach((edge) => {
+      const { from, to } = edge;
+      const fromVertex = data.vertices.find((vertex) => vertex.id === from);
+      const toVertex = data.vertices.find((vertex) => vertex.id === to);
+
+      if (fromVertex && toVertex) {
+        const length = calculateDistance(fromVertex, toVertex);
+        this.addEdge(from, to, length);
+      }
+    });
+  }
+
   addVertex(vertex: NodeId) {
     if (!this.adjacencyList[vertex]) this.adjacencyList[vertex] = [];
   }
 
   addEdge(vertex1: NodeId, vertex2: NodeId, weight = 1) {
+    if (!this.adjacencyList[vertex1]) this.adjacencyList[vertex1] = [];
+    if (!this.adjacencyList[vertex2]) this.adjacencyList[vertex2] = [];
     this.adjacencyList[vertex1].push({ id: vertex2, weight });
     this.adjacencyList[vertex2].push({ id: vertex1, weight });
   }
-  // Example: Calculate shortest path from v1 to v5
-  //console.log(graph.calculateShortestPath("v1","v5")); // ["v1", "v3", "v4", "v5"]
+
   calculateShortestPath(start: NodeId, finish: NodeId) {
     const nodes = new PriorityQueue();
     const distances: { [key: NodeId]: number } = {};
     const previous: { [key: NodeId]: NodeId } = {};
-    const path = []; //to return at end
+    const path = [];
     let smallest: string | null = null;
-    //build up initial state
+
     for (const vertex in this.adjacencyList) {
       if (vertex === start) {
         distances[vertex] = 0;
@@ -109,31 +131,27 @@ class DijkstraCalculator {
       }
       delete previous[vertex];
     }
-    // as long as there is something to visit
+
     while (nodes.values.length) {
       smallest = nodes.dequeue().id;
       if (smallest === finish) {
-        //WE ARE DONE
-        //BUILD UP PATH TO RETURN AT END
+        if (distances[smallest] === Infinity) {
+          return [];
+        }
         while (smallest && previous[smallest]) {
           path.push(smallest);
           smallest = previous[smallest];
         }
         break;
       }
-      if (smallest || distances[smallest] !== Infinity) {
+      if (smallest && distances[smallest] !== Infinity) {
         for (const neighbor in this.adjacencyList[smallest]) {
-          //find neighboring node
           const nextNode = this.adjacencyList[smallest][neighbor];
-          //calculate new distance to neighboring node
           const candidate = distances[smallest] + nextNode.weight;
           const nextNeighbor = nextNode.id;
           if (candidate < distances[nextNeighbor]) {
-            //updating new smallest distance to neighbor
             distances[nextNeighbor] = candidate;
-            //updating previous - How we got to neighbor
             previous[nextNeighbor] = smallest;
-            //enqueue in priority queue with new priority
             nodes.enqueue(nextNeighbor, candidate);
           }
         }
@@ -148,7 +166,6 @@ class DijkstraCalculator {
     }
 
     if (finalPath.length <= 1) {
-      // if the final path has only 1 or fewer elements, there was no traversal that was possible.
       return [];
     }
 
@@ -156,27 +173,13 @@ class DijkstraCalculator {
   }
 }
 
-export const graph = new DijkstraCalculator();
-
-graphData.vertices.forEach((vertex) => {
-  graph.addVertex(vertex.id);
-});
-
-graphData.edges.forEach((edge) => {
-  //console.log(edge.from, edge.to);
-  const { from, to } = edge;
-  const fromVertex = graphData.vertices.find((vertex) => vertex.id === from);
-  const toVertex = graphData.vertices.find((vertex) => vertex.id === to);
-
-  if (fromVertex && toVertex) {
-    //add the distance between the two vertices as the weight of the edge
-    const length = calculateDistance(fromVertex, toVertex);
-    graph.addEdge(from, to, length);
-  }
-});
-
 function calculateDistance(vertex1: VertexData, vertex2: VertexData) {
   const dx = vertex2.cx - vertex1.cx;
   const dy = vertex2.cy - vertex1.cy;
   return Math.sqrt(dx * dx + dy * dy);
 }
+
+export const graph = new DijkstraCalculator();
+
+// Carregar inicialmente com os dados padrão
+graph.loadGraph(graphData);
