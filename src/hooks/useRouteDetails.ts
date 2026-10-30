@@ -8,7 +8,12 @@ import {
 import { resetEdges } from "@/utils/navigationHelper";
 
 export function useRouteDetails() {
-  const { objects } = useContext(MapDataContext) as MapDataContextType;
+  const {
+    objects,
+    pendingCrossSectorRoute,
+    setPendingCrossSectorRoute,
+    continueCrossSectorRoute,
+  } = useContext(MapDataContext) as MapDataContextType;
   const { navigation, setNavigation } = useContext(
     NavigationContext
   ) as NavigationContextType;
@@ -49,6 +54,7 @@ export function useRouteDetails() {
 
   function handleLeave() {
     resetEdges();
+    setPendingCrossSectorRoute(null);
     setNavigation((prevNavigation) => ({
       ...prevNavigation,
       end: "",
@@ -58,6 +64,8 @@ export function useRouteDetails() {
   return {
     object,
     ...routeDetails,
+    pendingCrossSectorRoute,
+    continueCrossSectorRoute,
     handleLeave,
   };
 }

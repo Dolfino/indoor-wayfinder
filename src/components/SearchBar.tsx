@@ -1,8 +1,5 @@
 import Tooltip from "@/components/ui/Tooltip";
-import {
-  navigateToObject,
-  navigateWithDelay as navigationTestAll,
-} from "@/utils/navigationHelper";
+import { navigateWithDelay as navigationTestAll } from "@/utils/navigationHelper";
 import React, { useContext, useEffect, useRef, useState } from "react";
 import { FiCircle, FiNavigation } from "react-icons/fi";
 import { useOnClickOutside } from "usehooks-ts";
@@ -11,12 +8,15 @@ import {
   MapDataContextType,
   NavigationContextType,
   ObjectItem,
+  SECTOR_META_MAP,
+  SectorId,
 } from "../utils/types";
 
 function SearchBar() {
   const [inputValue, setInputValue] = useState<string>("");
-  const { objects } = useContext(MapDataContext) as MapDataContextType;
-  const [suggestions, setSuggestions] = useState<ObjectItem[]>(objects);
+  const { allObjects, objects, activeSector, navigateToStoreAcrossSectors } =
+    useContext(MapDataContext) as MapDataContextType;
+  const [suggestions, setSuggestions] = useState<ObjectItem[]>(allObjects);
   const [isAutocomplete, setIsAutocomplete] = useState<boolean>(false);
   const [isInputInvalid, setIsInputInvalid] = useState<boolean>(false);
   const [selectedIndex, setSelectedIndex] = useState<number>(-1);
@@ -30,8 +30,8 @@ function SearchBar() {
   ) as NavigationContextType;
 
   useEffect(() => {
-    setSuggestions(objects);
-  }, [objects]);
+    setSuggestions(allObjects);
+  }, [allObjects]);
 
   useOnClickOutside(suggestionsRef, () => {
     setIsAutocomplete(false);
@@ -46,7 +46,7 @@ function SearchBar() {
     setInputValue(value);
     if (value) {
       setIsAutocomplete(true);
-      const filteredSuggestions = objects.filter((obj) =>
+      const filteredSuggestions = allObjects.filter((obj) =>
         obj.name.toLowerCase().includes(value.trim().toLowerCase())
       );
       setSuggestions(filteredSuggestions);
@@ -72,13 +72,7 @@ function SearchBar() {
       } else if (event.key === "Enter" && selectedIndex >= 0) {
         handleSuggestionClick(suggestions[selectedIndex]);
         event.preventDefault();
-        console.log(suggestions[selectedIndex].categoryName);
-
-        navigateToObject(
-          suggestions[selectedIndex].name,
-          navigation,
-          setNavigation
-        );
+        navigateToStoreAcrossSectors(suggestions[selectedIndex]);
       }
     }
   }
@@ -95,9 +89,9 @@ function SearchBar() {
   }, [selectedIndex]);
 
   function handleSuggestionClick(selectedObject: ObjectItem) {
-    console.log(selectedObject);
     setInputValue(selectedObject.name);
     setIsAutocomplete(false);
+    navigateToStoreAcrossSectors(selectedObject);
   }
   function handleInputFocus(event: React.FocusEvent<HTMLInputElement>) {
     setIsEditMode(false);
@@ -114,11 +108,10 @@ function SearchBar() {
   }
 
   function handleSearch(inputValue: string) {
-    const matchingObject = objects.find(
+    const matchingObject = allObjects.find(
       (obj) => obj.name.toLowerCase() === inputValue.trim().toLowerCase()
     );
     if (!matchingObject) {
-      //? To test the navigation feature
       if (inputValue === "Test") {
         const delay = 500;
         navigationTestAll(objects, 0, delay, navigation, setNavigation);
@@ -128,7 +121,7 @@ function SearchBar() {
         return;
       }
     }
-    navigateToObject(matchingObject.name, navigation, setNavigation);
+    navigateToStoreAcrossSectors(matchingObject);
     setSelectedIndex(-1);
   }
 
@@ -145,7 +138,7 @@ function SearchBar() {
             className={`h-12 p-4 w-full flex-none text-gray-900 text-sm md:text-md ${
               isInputInvalid && "input-error"
             } `}
-            placeholder="Buscar loja, box ou serviço..."
+            placeholder="Buscar loja, box ou serviço em qualquer setor..."
             value={inputValue}
             onChange={handleInputChange}
             onBlur={handleInputBlur}
@@ -158,23 +151,33 @@ function SearchBar() {
           {isAutocomplete && (
             <ul
               ref={suggestionsRef}
-              className="absolute w-full z-10 mt-[3.25rem] bg-white rounded shadow-md max-h-60 h-min overflow-auto"
+              className="absolute w-full z-30 mt-[3.25rem] bg-white rounded shadow-md max-h-60 h-min overflow-auto"
               key={"suggestions"}
             >
               {suggestions.length > 0 ? (
-                suggestions.map((obj, index) => (
-                  <li
-                    key={index}
-                    className={`cursor-pointer p-2 border-t text-gray-600 hover:bg-gray-200 active:bg-gray-300 text-sm md:text-md ${
-                      selectedIndex === index
-                        ? "border-l-4 border-blue-500 bg-gray-200"
-                        : ""
-                    }`}
-                    onMouseDown={() => handleSuggestionClick(obj)}
-                  >
-                    {obj.name}
-                  </li>
-                ))
+                suggestions.map((obj, index) => {
+                  const secId = (obj.sectorId || "verde") as SectorId;
+                  const secMeta = SECTOR_META_MAP[secId];
+                  const isOther = secId !== activeSector;
+                  return (
+                    <li
+                      key={obj.id || index}
+                      className={`cursor-pointer p-2.5 border-t text-gray-700 hover:bg-gray-100 active:bg-gray-200 text-sm flex items-center justify-between gap-2 ${
+                        selectedIndex === index
+                          ? "border-l-4 border-blue-500 bg-gray-100"
+                          : ""
+                      }`}
+                      onMouseDown={() => handleSuggestionClick(obj)}
+                    >
+                      <span className="font-medium truncate">{obj.name}</span>
+                      <span
+                        className={`text-[10px] font-bold px-1.5 py-0.5 rounded border flex-none ${secMeta.badgeClass}`}
+                      >
+                        {isOther ? `Ir p/ ${secMeta.name}` : secMeta.shortName}
+                      </span>
+                    </li>
+                  );
+                })
               ) : (
                 <li
                   className="p-2 text-gray-500 text-sm md:text-md"

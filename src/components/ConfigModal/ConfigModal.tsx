@@ -24,6 +24,9 @@ import {
   StoreType,
   STORE_TYPE_META,
   LocationPoint,
+  SECTORS,
+  SECTOR_META_MAP,
+  SectorId,
 } from "@/utils/types";
 import { findNearestEntrance } from "@/utils/graphBuilder";
 import { navigateToObject } from "@/utils/navigationHelper";
@@ -33,6 +36,11 @@ type ActiveTab = "list" | "form" | "points" | "point-form" | "corridors";
 
 function ConfigModal() {
   const {
+    activeSector,
+    setActiveSector,
+    allObjects,
+    allLocationPoints,
+    allCorridorLines,
     objects,
     categories,
     addStore,
@@ -83,6 +91,8 @@ function ConfigModal() {
   const [formDesc, setFormDesc] = useState("");
   const [formCategory, setFormCategory] = useState(categories[0]?.id || "cat-fem");
   const [formType, setFormType] = useState<StoreType>("loja");
+  const [formPortalToSector, setFormPortalToSector] = useState<string>("");
+  const [formPortalTargetId, setFormPortalTargetId] = useState<string>("");
   const [formX, setFormX] = useState<number>(500);
   const [formY, setFormY] = useState<number>(500);
   const [formWidth, setFormWidth] = useState<number>(80);
@@ -125,6 +135,8 @@ function ConfigModal() {
       setFormDesc(editingStore.desc || "");
       setFormCategory(editingStore.categoryId);
       setFormType(editingStore.type || "loja");
+      setFormPortalToSector(editingStore.portalToSectorId || "");
+      setFormPortalTargetId(editingStore.portalTargetObjectId || "");
       setFormX(editingStore.x ?? 500);
       setFormY(editingStore.y ?? 500);
       setFormWidth(editingStore.width ?? 80);
@@ -158,6 +170,8 @@ function ConfigModal() {
     setFormDesc("");
     setFormCategory(categories[0]?.id || "cat-fem");
     setFormType("loja");
+    setFormPortalToSector("");
+    setFormPortalTargetId("");
     setFormX(673);
     setFormY(500);
     setFormWidth(75);
@@ -206,12 +220,20 @@ function ConfigModal() {
     }
 
     const typeInfo = STORE_TYPE_META[formType] || STORE_TYPE_META.loja;
+    const currentSectorMeta = SECTOR_META_MAP[activeSector];
     const payload: ObjectItem = {
       id: formId || `cf-custom-${Date.now()}`,
       name: formName.trim(),
-      desc: formDesc.trim() || `${typeInfo.label} no Setor Verde do Centro Fashion.`,
+      desc:
+        formDesc.trim() ||
+        `${typeInfo.label} no ${currentSectorMeta.name} do Centro Fashion.`,
       categoryId: formCategory,
       type: formType,
+      sectorId: editingStore?.sectorId || activeSector,
+      portalToSectorId: formPortalToSector
+        ? (formPortalToSector as SectorId)
+        : undefined,
+      portalTargetObjectId: formPortalTargetId || undefined,
       x: Number(formX),
       y: Number(formY),
       width: Number(formWidth),
@@ -276,15 +298,26 @@ function ConfigModal() {
     const dataStr =
       "data:text/json;charset=utf-8," +
       encodeURIComponent(
-        JSON.stringify({ objects, locationPoints, corridorLines }, null, 2)
+        JSON.stringify(
+          {
+            objects: allObjects,
+            locationPoints: allLocationPoints,
+            corridorLines: allCorridorLines,
+          },
+          null,
+          2
+        )
       );
     const downloadAnchor = document.createElement("a");
     downloadAnchor.setAttribute("href", dataStr);
-    downloadAnchor.setAttribute("download", "centro-fashion-setor-verde-dados.json");
+    downloadAnchor.setAttribute(
+      "download",
+      "centro-fashion-todos-setores-dados.json"
+    );
     document.body.appendChild(downloadAnchor);
     downloadAnchor.click();
     downloadAnchor.remove();
-    toast.success("Arquivo JSON exportado com sucesso!");
+    toast.success("Arquivo JSON (todos os setores) exportado com sucesso!");
   }
 
   function handleImportJsonFile(e: React.ChangeEvent<HTMLInputElement>) {
@@ -361,29 +394,50 @@ function ConfigModal() {
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 overflow-y-auto">
       <div className="relative w-full max-w-4xl bg-white rounded-2xl shadow-2xl flex flex-col max-h-[90vh] overflow-hidden border border-gray-100">
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200 bg-gray-50/80">
+        <div className="flex flex-wrap items-center justify-between px-6 py-4 border-b border-gray-200 bg-gray-50/80 gap-3">
           <div>
             <h2 className="text-xl font-bold text-gray-900 flex items-center gap-2">
               <span>Configurações & Demarcação</span>
-              <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800">
-                CRUD Completo
+              <span
+                className={`text-xs font-bold px-2.5 py-0.5 rounded-full border ${SECTOR_META_MAP[activeSector].badgeClass}`}
+              >
+                {SECTOR_META_MAP[activeSector].name}
               </span>
             </h2>
             <p className="text-xs text-gray-500 mt-0.5">
-              Gerencie lojas, boxes, quiosques e também os pontos de localização dos corredores
+              Gerencie lojas, acessos, pontos de localização, retas de corredores e conexões entre setores
             </p>
           </div>
-          <button
-            type="button"
-            onClick={() => {
-              setIsConfigModalOpen(false);
-              resetForm();
-              resetPointForm();
-            }}
-            className="p-2 text-gray-400 hover:text-gray-700 hover:bg-gray-200 rounded-full transition-colors"
-          >
-            <FiX className="text-xl" />
-          </button>
+
+          <div className="flex items-center gap-2">
+            <select
+              value={activeSector}
+              onChange={(e) => {
+                setActiveSector(e.target.value as SectorId);
+                resetForm();
+                resetPointForm();
+              }}
+              className="text-xs font-bold px-3 py-1.5 rounded-lg border border-gray-300 bg-white text-gray-800 shadow-sm"
+            >
+              {SECTORS.map((sec) => (
+                <option key={sec.id} value={sec.id}>
+                  📍 Editando: {sec.name}
+                </option>
+              ))}
+            </select>
+
+            <button
+              type="button"
+              onClick={() => {
+                setIsConfigModalOpen(false);
+                resetForm();
+                resetPointForm();
+              }}
+              className="p-2 text-gray-400 hover:text-gray-700 hover:bg-gray-200 rounded-full transition-colors"
+            >
+              <FiX className="text-xl" />
+            </button>
+          </div>
         </div>
 
         {/* Tab Navigation */}
@@ -773,6 +827,84 @@ function ConfigModal() {
                     onChange={(e) => setFormDesc(e.target.value)}
                     className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500"
                   />
+                </div>
+              </div>
+
+              {/* Conexão / Portal para Outro Setor */}
+              <div className="bg-indigo-50/70 p-4 rounded-xl border border-indigo-200">
+                <div className="mb-2">
+                  <span className="text-xs font-bold text-indigo-900">
+                    🔗 Conexão / Passagem para Outro Setor (Opcional)
+                  </span>
+                  <p className="text-[11px] text-indigo-700 mt-0.5">
+                    Se este ponto for uma entrada para outro setor (ex: "Passagem p/ Setor Azul", Esteira Rolante ou Elevador), selecione para qual setor ele leva. Quando alguém buscar uma loja daquele setor, a linha tracejada irá até aqui e depois continuará no outro setor!
+                  </p>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
+                  <div>
+                    <label className="block text-indigo-900 font-semibold mb-1">
+                      Leva para qual Setor?
+                    </label>
+                    <select
+                      value={formPortalToSector}
+                      onChange={(e) => {
+                        setFormPortalToSector(e.target.value);
+                        setFormPortalTargetId("");
+                      }}
+                      className="w-full px-3 py-2 border border-indigo-300 rounded-lg bg-white text-gray-800 font-semibold"
+                    >
+                      <option value="">— Não é passagem entre setores —</option>
+                      {SECTORS.filter((s) => s.id !== activeSector).map((sec) => (
+                        <option key={sec.id} value={sec.id}>
+                          ➡️ Conecta com {sec.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {formPortalToSector && (
+                    <div>
+                      <label className="block text-indigo-900 font-semibold mb-1">
+                        Ponto/Entrada correspondente no{" "}
+                        {SECTOR_META_MAP[formPortalToSector as SectorId]?.shortName}{" "}
+                        (Opcional)
+                      </label>
+                      <select
+                        value={formPortalTargetId}
+                        onChange={(e) => setFormPortalTargetId(e.target.value)}
+                        className="w-full px-3 py-2 border border-indigo-300 rounded-lg bg-white text-gray-800"
+                      >
+                        <option value="">
+                          Usar ponto inicial padrão do{" "}
+                          {SECTOR_META_MAP[formPortalToSector as SectorId]?.name}
+                        </option>
+                        <optgroup label="Pontos de Localização no Setor de Destino">
+                          {allLocationPoints
+                            .filter(
+                              (p) =>
+                                (p.sectorId || "verde") === formPortalToSector
+                            )
+                            .map((pt) => (
+                              <option key={pt.id} value={pt.id}>
+                                📍 {pt.name}
+                              </option>
+                            ))}
+                        </optgroup>
+                        <optgroup label="Entradas / Acessos no Setor de Destino">
+                          {allObjects
+                            .filter(
+                              (o) =>
+                                (o.sectorId || "verde") === formPortalToSector
+                            )
+                            .map((obj) => (
+                              <option key={obj.id} value={obj.id}>
+                                🚪 {obj.name}
+                              </option>
+                            ))}
+                        </optgroup>
+                      </select>
+                    </div>
+                  )}
                 </div>
               </div>
 

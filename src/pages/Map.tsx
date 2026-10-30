@@ -11,6 +11,9 @@ import {
   StoreType,
   LocationPoint,
   CorridorLine,
+  SectorId,
+  CrossSectorTransition,
+  SECTOR_META_MAP,
 } from "../utils/types";
 import IndoorMapWrapper from "@/components/IndoorMapWrapper";
 import MobileRouteDetails from "@/components/MobileRouteDetails";
@@ -25,7 +28,8 @@ import {
   getDefaultLocationPoints,
   getDefaultCorridorLines,
 } from "@/utils/graphBuilder";
-import { navigateToObject } from "@/utils/navigationHelper";
+import { navigateToObject, resetEdges } from "@/utils/navigationHelper";
+import { toast } from "react-toastify";
 
 export const NavigationContext = createContext<NavigationContextType | null>(null);
 export const MapDataContext = createContext<MapDataContextType | null>(null);
@@ -34,6 +38,19 @@ const STORAGE_KEY_STORES = "centro-fashion:stores-v3";
 const STORAGE_KEY_LOCATIONS = "centro-fashion:locations-v1";
 const STORAGE_KEY_CORRIDORS = "centro-fashion:corridors-v1";
 const DEFAULT_POSITION = "v_pedro_pereira_centro";
+
+function normalizeSector(sectorId?: string): SectorId {
+  if (
+    sectorId === "verde" ||
+    sectorId === "azul" ||
+    sectorId === "amarelo" ||
+    sectorId === "roxo" ||
+    sectorId === "branco"
+  ) {
+    return sectorId;
+  }
+  return "verde";
+}
 
 function loadStores(): ObjectItem[] {
   try {
@@ -48,7 +65,10 @@ function loadStores(): ObjectItem[] {
     if (raw) {
       const parsed = JSON.parse(raw);
       if (Array.isArray(parsed) && parsed.length > 0) {
-        return parsed;
+        return parsed.map((o: ObjectItem) => ({
+          ...o,
+          sectorId: normalizeSector(o.sectorId),
+        }));
       }
     }
   } catch {
@@ -57,6 +77,7 @@ function loadStores(): ObjectItem[] {
 
   return ((db as any).objects as ObjectItem[]).map((o) => ({
     ...o,
+    sectorId: normalizeSector(o.sectorId),
     type: (o.type || "loja") as StoreType,
     x: o.x ?? 0,
     y: o.y ?? 0,
@@ -81,7 +102,10 @@ function loadLocations(): LocationPoint[] {
     if (raw) {
       const parsed = JSON.parse(raw);
       if (Array.isArray(parsed) && parsed.length > 0) {
-        return parsed;
+        return parsed.map((p: LocationPoint) => ({
+          ...p,
+          sectorId: normalizeSector(p.sectorId),
+        }));
       }
     }
   } catch {
@@ -89,9 +113,15 @@ function loadLocations(): LocationPoint[] {
   }
   const dbPoints = (db as any).locationPoints as LocationPoint[] | undefined;
   if (Array.isArray(dbPoints) && dbPoints.length > 0) {
-    return dbPoints;
+    return dbPoints.map((p) => ({
+      ...p,
+      sectorId: normalizeSector(p.sectorId),
+    }));
   }
-  return getDefaultLocationPoints();
+  return getDefaultLocationPoints().map((p) => ({
+    ...p,
+    sectorId: "verde" as SectorId,
+  }));
 }
 
 function persistLocations(points: LocationPoint[]) {
@@ -108,7 +138,10 @@ function loadCorridorLines(): CorridorLine[] {
     if (raw) {
       const parsed = JSON.parse(raw);
       if (Array.isArray(parsed) && parsed.length > 0) {
-        return parsed;
+        return parsed.map((l: CorridorLine) => ({
+          ...l,
+          sectorId: normalizeSector(l.sectorId),
+        }));
       }
     }
   } catch {
@@ -116,9 +149,15 @@ function loadCorridorLines(): CorridorLine[] {
   }
   const dbCorridors = (db as any).corridorLines as CorridorLine[] | undefined;
   if (Array.isArray(dbCorridors) && dbCorridors.length > 0) {
-    return dbCorridors;
+    return dbCorridors.map((l) => ({
+      ...l,
+      sectorId: normalizeSector(l.sectorId),
+    }));
   }
-  return getDefaultCorridorLines();
+  return getDefaultCorridorLines().map((l) => ({
+    ...l,
+    sectorId: "verde" as SectorId,
+  }));
 }
 
 function persistCorridorLines(lines: CorridorLine[]) {
@@ -131,60 +170,273 @@ function persistCorridorLines(lines: CorridorLine[]) {
 
 function Map() {
   const [searchParams, setSearchParams] = useSearchParams();
+  const initialSector = normalizeSector(searchParams.get("sector") || "verde");
   const startPosition = searchParams.get("position") || DEFAULT_POSITION;
+
+  const [activeSector, setActiveSectorState] = useState<SectorId>(initialSector);
   const [navigation, setNavigation] = useState<Navigation>({
     start: startPosition,
     end: "",
   });
   const [isEditMode, setIsEditMode] = useState(false);
+  const [pendingCrossSectorRoute, setPendingCrossSectorRoute] =
+    useState<CrossSectorTransition | null>(null);
 
-  // CRUD Lojas / Estabelecimentos
+  // CRUD Lojas / Estabelecimentos (Todos os setores)
   const [storeList, setStoreList] = useState<ObjectItem[]>(loadStores);
   const [isDemarcating, setIsDemarcating] = useState(false);
   const [demarcationDraft, setDemarcationDraft] = useState<DemarcationDraft | null>(null);
   const [isConfigModalOpen, setIsConfigModalOpen] = useState(false);
   const [editingStore, setEditingStore] = useState<ObjectItem | null>(null);
 
-  // CRUD Pontos de Localização ("Você está aqui")
-  const [locationPoints, setLocationPoints] = useState<LocationPoint[]>(loadLocations);
+  // CRUD Pontos de Localização ("Você está aqui" - Todos os setores)
+  const [allLocationPoints, setAllLocationPoints] = useState<LocationPoint[]>(loadLocations);
   const [isAddingPoint, setIsAddingPoint] = useState(false);
   const [editingLocationPoint, setEditingLocationPoint] = useState<LocationPoint | null>(null);
 
-  // CRUD Retas de Corredores (Malha desenhável pelo usuário)
-  const [corridorLines, setCorridorLines] = useState<CorridorLine[]>(loadCorridorLines);
+  // CRUD Retas de Corredores (Todos os setores)
+  const [allCorridorLines, setAllCorridorLines] = useState<CorridorLine[]>(loadCorridorLines);
   const [isDrawingCorridor, setIsDrawingCorridor] = useState(false);
   const [showCorridorLines, setShowCorridorLines] = useState(false);
 
   const categories: Category[] = db.categories;
 
-  // Enrich objects with categoryName
-  const objects = useMemo(() => {
+  // Enrich all objects with categoryName and normalized sectorId
+  const allObjects = useMemo(() => {
     const catMap = new globalThis.Map(categories.map((c) => [c.id, c.name]));
     return storeList.map((o) => ({
       ...o,
+      sectorId: normalizeSector(o.sectorId),
       categoryName: catMap.get(o.categoryId) || "",
     }));
   }, [storeList, categories]);
 
-  // Rebuild graph whenever store list, locations or corridor lines change
-  function rebuildGraph(
-    stores: ObjectItem[],
-    points: LocationPoint[],
-    lines: CorridorLine[] = corridorLines
+  // Dados filtrados apenas para o setor ativo
+  const objects = useMemo(
+    () => allObjects.filter((o) => normalizeSector(o.sectorId) === activeSector),
+    [allObjects, activeSector]
+  );
+
+  const locationPoints = useMemo(
+    () =>
+      allLocationPoints.filter(
+        (p) => normalizeSector(p.sectorId) === activeSector
+      ),
+    [allLocationPoints, activeSector]
+  );
+
+  const corridorLines = useMemo(
+    () =>
+      allCorridorLines.filter(
+        (l) => normalizeSector(l.sectorId) === activeSector
+      ),
+    [allCorridorLines, activeSector]
+  );
+
+  // Rebuild graph para um setor específico
+  function rebuildGraphForSector(
+    sector: SectorId,
+    storesSource: ObjectItem[] = storeList,
+    pointsSource: LocationPoint[] = allLocationPoints,
+    linesSource: CorridorLine[] = allCorridorLines
   ) {
-    const newGraph = generateGraphData(stores, points, lines);
+    const sectorStores = storesSource.filter(
+      (s) => normalizeSector(s.sectorId) === sector
+    );
+    const sectorPoints = pointsSource.filter(
+      (p) => normalizeSector(p.sectorId) === sector
+    );
+    const sectorLines = linesSource.filter(
+      (l) => normalizeSector(l.sectorId) === sector
+    );
+
+    const newGraph = generateGraphData(sectorStores, sectorPoints, sectorLines);
     setGraphData(newGraph);
     graph.loadGraph(newGraph);
-    if (navigation.end) {
+  }
+
+  // Troca de Setor Ativo
+  function setActiveSector(nextSector: SectorId) {
+    if (nextSector === activeSector) return;
+    resetEdges();
+    setPendingCrossSectorRoute(null);
+    setActiveSectorState(nextSector);
+
+    const sectorPoints = allLocationPoints.filter(
+      (p) => normalizeSector(p.sectorId) === nextSector
+    );
+    const nextStart = sectorPoints[0]?.id || "";
+    setNavigation({ start: nextStart, end: "" });
+    rebuildGraphForSector(
+      nextSector,
+      storeList,
+      allLocationPoints,
+      allCorridorLines
+    );
+  }
+
+  /**
+   * Roteamento Inteligente Entre Setores (Cross-Sector Wayfinding):
+   * 1. Se o destino pertence ao setor atual, traça a rota diretamente.
+   * 2. Se o destino pertence a outro setor:
+   *    - Procura no setor atual por portais conectados ao setor de destino (`portalToSectorId === targetSector`)
+   *      ou por nome/tipo sugestivo (ex: "Entrada Setor Azul", "Passagem Setor Azul", "Esteira Rolante", "Elevador").
+   *    - Escolhe o portal com a menor rota a partir de "Você está aqui", traça o tracejado até o portal
+   *      e ativa o banner de transição ("Ir para Setor X e continuar rota").
+   */
+  function navigateToStoreAcrossSectors(targetStore: ObjectItem) {
+    const targetSector = normalizeSector(targetStore.sectorId);
+
+    // Mesmo setor -> rota direta normal
+    if (targetSector === activeSector) {
+      setPendingCrossSectorRoute(null);
+      navigateToObject(targetStore.name, navigation, setNavigation);
+      return;
+    }
+
+    // Destino em outro setor -> procura portal no setor atual que leve ao targetSector
+    const currentSectorStores = allObjects.filter(
+      (o) => normalizeSector(o.sectorId) === activeSector
+    );
+
+    // 1ª prioridade: locais com `portalToSectorId === targetSector` configurado explicitamente
+    let candidatePortals = currentSectorStores.filter(
+      (o) => o.portalToSectorId === targetSector
+    );
+
+    // 2ª prioridade: entradas/acessos cujo nome menciona a cor do setor de destino (ex: "Setor Azul")
+    const targetSectorShort =
+      SECTOR_META_MAP[targetSector].shortName.toLowerCase();
+    if (candidatePortals.length === 0) {
+      candidatePortals = currentSectorStores.filter((o) =>
+        o.name.toLowerCase().includes(targetSectorShort)
+      );
+    }
+
+    // 3ª prioridade: qualquer Esteira Rolante, Escada Rolante, Elevador ou Entrada/Saída no setor atual
+    if (candidatePortals.length === 0) {
+      candidatePortals = currentSectorStores.filter(
+        (o) =>
+          o.type === "entrada_saida" ||
+          o.type === "esteira_rolante" ||
+          o.type === "escada_rolante" ||
+          o.type === "elevador"
+      );
+    }
+
+    if (candidatePortals.length > 0) {
+      const chosenPortal = candidatePortals[0];
+      setPendingCrossSectorRoute({
+        portalObject: chosenPortal,
+        targetSectorId: targetSector,
+        finalDestinationObject: targetStore,
+      });
+      navigateToObject(chosenPortal.name, navigation, setNavigation);
+      toast.info(
+        `Siga até "${chosenPortal.name}" para acessar o ${SECTOR_META_MAP[targetSector].name} rumo a "${targetStore.name}"!`
+      );
+    } else {
+      // Caso o setor atual ainda não tenha nenhum portal ou corredor que chegue a um portal,
+      // muda diretamente para o setor de destino e traça a rota lá
+      toast.info(
+        `Alternando para ${SECTOR_META_MAP[targetSector].name} para exibir "${targetStore.name}".`
+      );
+      resetEdges();
+      setActiveSectorState(targetSector);
+      const targetPoints = allLocationPoints.filter(
+        (p) => normalizeSector(p.sectorId) === targetSector
+      );
+      const nextStart = targetPoints[0]?.id || "";
+      const nextNav = { start: nextStart, end: targetStore.name };
+      setNavigation(nextNav);
+      rebuildGraphForSector(
+        targetSector,
+        storeList,
+        allLocationPoints,
+        allCorridorLines
+      );
       setTimeout(() => {
-        navigateToObject(navigation.end!, navigation, setNavigation);
-      }, 0);
+        navigateToObject(targetStore.name, nextNav, setNavigation);
+      }, 50);
     }
   }
 
-  // Initial graph load & garante que navigation.start aponte para um ponto de localização existente
+  /**
+   * Executa a 2ª etapa da rota multi-setor quando o usuário clica em "Ir para o Setor X":
+   * - Muda para o setor de destino
+   * - Define o ponto de partida no portal correspondente (ou ponto mais próximo)
+   * - Traça a linha tracejada até o local desejado!
+   */
+  function continueCrossSectorRoute() {
+    if (!pendingCrossSectorRoute) return;
+    const { portalObject, targetSectorId, finalDestinationObject } =
+      pendingCrossSectorRoute;
+
+    resetEdges();
+    setPendingCrossSectorRoute(null);
+    setActiveSectorState(targetSectorId);
+
+    const targetPoints = allLocationPoints.filter(
+      (p) => normalizeSector(p.sectorId) === targetSectorId
+    );
+    const targetStores = storeList.filter(
+      (s) => normalizeSector(s.sectorId) === targetSectorId
+    );
+
+    // Determina o melhor ponto inicial ("Você está aqui") ao entrar no novo setor:
+    // 1) Se o portal tiver `portalTargetObjectId` apontando para um ponto ou objeto no setor de destino
+    let startId = targetPoints[0]?.id || "";
+    if (portalObject.portalTargetObjectId) {
+      const matchingPt = targetPoints.find(
+        (p) => p.id === portalObject.portalTargetObjectId
+      );
+      if (matchingPt) {
+        startId = matchingPt.id;
+      } else {
+        const matchingObj = targetStores.find(
+          (s) => s.id === portalObject.portalTargetObjectId
+        );
+        if (matchingObj && targetPoints.length > 0) {
+          // Escolhe o ponto de localização mais próximo ao objeto de entrada no novo setor
+          const ox = matchingObj.entranceX ?? matchingObj.x ?? 1600;
+          const oy = matchingObj.entranceY ?? matchingObj.y ?? 1800;
+          let bestDist = Infinity;
+          for (const pt of targetPoints) {
+            const d = Math.hypot(pt.cx - ox, pt.cy - oy);
+            if (d < bestDist) {
+              bestDist = d;
+              startId = pt.id;
+            }
+          }
+        }
+      }
+    }
+
+    const nextNav: Navigation = {
+      start: startId,
+      end: finalDestinationObject.name,
+    };
+    setNavigation(nextNav);
+    rebuildGraphForSector(
+      targetSectorId,
+      storeList,
+      allLocationPoints,
+      allCorridorLines
+    );
+
+    setTimeout(() => {
+      navigateToObject(finalDestinationObject.name, nextNav, setNavigation);
+    }, 60);
+  }
+
+  // Initial graph load & garante que navigation.start aponte para um ponto de localização existente no setor
   useEffect(() => {
-    rebuildGraph(storeList, locationPoints, corridorLines);
+    rebuildGraphForSector(
+      activeSector,
+      storeList,
+      allLocationPoints,
+      allCorridorLines
+    );
     if (
       locationPoints.length > 0 &&
       !locationPoints.some((p) => p.id === navigation.start)
@@ -201,132 +453,191 @@ function Map() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         objects: storeList,
-        locationPoints,
-        corridorLines,
+        locationPoints: allLocationPoints,
+        corridorLines: allCorridorLines,
       }),
     }).catch(() => {
       /* ignore in production */
     });
-  }, [storeList, locationPoints, corridorLines]);
+  }, [storeList, allLocationPoints, allCorridorLines]);
 
   useEffect(() => {
-    setSearchParams({ position: navigation.start });
-  }, [navigation.start, setSearchParams]);
+    setSearchParams({
+      sector: activeSector,
+      position: navigation.start,
+    });
+  }, [activeSector, navigation.start, setSearchParams]);
 
-  // CRUD Lojas
+  // CRUD Lojas (opera no setor ativo por padrão)
   function addStore(store: Omit<ObjectItem, "id"> & { id?: string }) {
     const newStore: ObjectItem = {
       ...store,
       id: store.id || `cf-custom-${Date.now()}`,
+      sectorId: store.sectorId || activeSector,
     } as ObjectItem;
     const updated = [...storeList, newStore];
     setStoreList(updated);
     persistStores(updated);
-    rebuildGraph(updated, locationPoints);
+    rebuildGraphForSector(
+      activeSector,
+      updated,
+      allLocationPoints,
+      allCorridorLines
+    );
   }
 
   function updateStore(store: ObjectItem) {
-    const updated = storeList.map((s) => (s.id === store.id ? store : s));
+    const normalized: ObjectItem = {
+      ...store,
+      sectorId: store.sectorId || activeSector,
+    };
+    const updated = storeList.map((s) =>
+      s.id === normalized.id ? normalized : s
+    );
     setStoreList(updated);
     persistStores(updated);
-    rebuildGraph(updated, locationPoints);
+    rebuildGraphForSector(
+      activeSector,
+      updated,
+      allLocationPoints,
+      allCorridorLines
+    );
   }
 
   function deleteStore(storeId: string) {
     const updated = storeList.filter((s) => s.id !== storeId);
     setStoreList(updated);
     persistStores(updated);
-    rebuildGraph(updated, locationPoints);
+    rebuildGraphForSector(
+      activeSector,
+      updated,
+      allLocationPoints,
+      allCorridorLines
+    );
   }
 
   function resetDefaultStores() {
-    setStoreList([]);
-    try {
-      localStorage.removeItem(STORAGE_KEY_STORES);
-    } catch {
-      /* ignore */
-    }
-    rebuildGraph([], locationPoints);
+    // Remove apenas os locais do setor ativo
+    const updated = storeList.filter(
+      (s) => normalizeSector(s.sectorId) !== activeSector
+    );
+    setStoreList(updated);
+    persistStores(updated);
+    rebuildGraphForSector(
+      activeSector,
+      updated,
+      allLocationPoints,
+      allCorridorLines
+    );
   }
 
-  // CRUD Pontos de Localização
+  // CRUD Pontos de Localização (opera no setor ativo)
   function addLocationPoint(point: Omit<LocationPoint, "id"> & { id?: string }) {
     const newPoint: LocationPoint = {
       ...point,
       id: point.id || `loc-${Date.now()}`,
+      sectorId: point.sectorId || activeSector,
     };
-    const updated = [...locationPoints, newPoint];
-    setLocationPoints(updated);
+    const updated = [...allLocationPoints, newPoint];
+    setAllLocationPoints(updated);
     persistLocations(updated);
-    // Se for o primeiro ponto adicionado (ou se o start atual não existir), torna-o ativo automaticamente
+    const sectorPts = updated.filter(
+      (p) => normalizeSector(p.sectorId) === activeSector
+    );
     if (
-      updated.length === 1 ||
-      !updated.some((p) => p.id === navigation.start)
+      sectorPts.length === 1 ||
+      !sectorPts.some((p) => p.id === navigation.start)
     ) {
       setNavigation((prev) => ({ ...prev, start: newPoint.id }));
     }
-    rebuildGraph(storeList, updated);
+    rebuildGraphForSector(activeSector, storeList, updated, allCorridorLines);
   }
 
   function updateLocationPoint(point: LocationPoint) {
-    const updated = locationPoints.map((p) => (p.id === point.id ? point : p));
-    setLocationPoints(updated);
+    const normalized: LocationPoint = {
+      ...point,
+      sectorId: point.sectorId || activeSector,
+    };
+    const updated = allLocationPoints.map((p) =>
+      p.id === normalized.id ? normalized : p
+    );
+    setAllLocationPoints(updated);
     persistLocations(updated);
-    rebuildGraph(storeList, updated);
+    rebuildGraphForSector(activeSector, storeList, updated, allCorridorLines);
   }
 
   function deleteLocationPoint(pointId: string) {
-    const updated = locationPoints.filter((p) => p.id !== pointId);
-    setLocationPoints(updated);
+    const updated = allLocationPoints.filter((p) => p.id !== pointId);
+    setAllLocationPoints(updated);
     persistLocations(updated);
-    // Se o ponto atual de início foi excluído, redefine para o primeiro disponível
-    if (navigation.start === pointId && updated.length > 0) {
-      setNavigation((prev) => ({ ...prev, start: updated[0].id }));
+    const sectorPts = updated.filter(
+      (p) => normalizeSector(p.sectorId) === activeSector
+    );
+    if (navigation.start === pointId && sectorPts.length > 0) {
+      setNavigation((prev) => ({ ...prev, start: sectorPts[0].id }));
     }
-    rebuildGraph(storeList, updated);
+    rebuildGraphForSector(activeSector, storeList, updated, allCorridorLines);
   }
 
   function clearAllLocationPoints() {
-    setLocationPoints([]);
-    persistLocations([]);
-    rebuildGraph(storeList, []);
+    const updated = allLocationPoints.filter(
+      (p) => normalizeSector(p.sectorId) !== activeSector
+    );
+    setAllLocationPoints(updated);
+    persistLocations(updated);
+    rebuildGraphForSector(activeSector, storeList, updated, allCorridorLines);
   }
 
   function resetDefaultLocationPoints() {
-    const defaults = getDefaultLocationPoints();
-    setLocationPoints(defaults);
-    persistLocations(defaults);
-    rebuildGraph(storeList, defaults, corridorLines);
+    const others = allLocationPoints.filter(
+      (p) => normalizeSector(p.sectorId) !== activeSector
+    );
+    const defaults = getDefaultLocationPoints().map((p) => ({
+      ...p,
+      id: activeSector === "verde" ? p.id : `${activeSector}_${p.id}`,
+      sectorId: activeSector,
+    }));
+    const updated = [...others, ...defaults];
+    setAllLocationPoints(updated);
+    persistLocations(updated);
+    rebuildGraphForSector(activeSector, storeList, updated, allCorridorLines);
   }
 
-  // CRUD Retas de Corredores
+  // CRUD Retas de Corredores (opera no setor ativo)
   function addCorridorLine(line: Omit<CorridorLine, "id"> & { id?: string }) {
     const newLine: CorridorLine = {
       ...line,
       id: line.id || `cor-${Date.now()}`,
+      sectorId: line.sectorId || activeSector,
     };
-    const updated = [...corridorLines, newLine];
-    setCorridorLines(updated);
+    const updated = [...allCorridorLines, newLine];
+    setAllCorridorLines(updated);
     persistCorridorLines(updated);
-    rebuildGraph(storeList, locationPoints, updated);
+    rebuildGraphForSector(activeSector, storeList, allLocationPoints, updated);
   }
 
   function updateCorridorLine(line: CorridorLine) {
-    const updated = corridorLines.map((l) => (l.id === line.id ? line : l));
-    setCorridorLines(updated);
+    const normalized: CorridorLine = {
+      ...line,
+      sectorId: line.sectorId || activeSector,
+    };
+    const updated = allCorridorLines.map((l) =>
+      l.id === normalized.id ? normalized : l
+    );
+    setAllCorridorLines(updated);
     persistCorridorLines(updated);
-    rebuildGraph(storeList, locationPoints, updated);
+    rebuildGraphForSector(activeSector, storeList, allLocationPoints, updated);
   }
 
   function deleteCorridorLine(lineId: string) {
-    const updated = corridorLines.filter((l) => l.id !== lineId);
-    setCorridorLines(updated);
+    const updated = allCorridorLines.filter((l) => l.id !== lineId);
+    setAllCorridorLines(updated);
     persistCorridorLines(updated);
-    rebuildGraph(storeList, locationPoints, updated);
+    rebuildGraphForSector(activeSector, storeList, allLocationPoints, updated);
   }
 
   /**
-   * Remove apenas um trecho específico (x1, y1)-(x2, y2) de uma reta de corredor.
+   * Remove apenas um trecho específico (x1, y1)-(x2, y2) de uma reta de corredor do setor ativo.
    * Se o trecho estiver no meio de uma reta longa, divide a reta nas duas partes restantes!
    */
   function deleteCorridorSubsegment(
@@ -337,11 +648,15 @@ function Map() {
   ) {
     const updated: CorridorLine[] = [];
 
-    for (const line of corridorLines) {
+    for (const line of allCorridorLines) {
+      if (normalizeSector(line.sectorId) !== activeSector) {
+        updated.push(line);
+        continue;
+      }
+
       const len = Math.hypot(line.x2 - line.x1, line.y2 - line.y1);
       if (len < 1) continue;
 
-      // Distância perpendicular de (sx1, sy1) e (sx2, sy2) até a reta `line`
       const dx = line.x2 - line.x1;
       const dy = line.y2 - line.y1;
       const lenSq = dx * dx + dy * dy;
@@ -360,9 +675,7 @@ function Map() {
       const tMin = Math.max(0, Math.min(t1, t2));
       const tMax = Math.min(1, Math.max(t1, t2));
 
-      // Verifica se os dois extremos do trecho clicado pertencem a esta reta
       if (dist1 <= 12 && dist2 <= 12 && tMax - tMin > 0.01) {
-        // Parte anterior ao trecho removido
         const pStartX = Math.round(line.x1 + tMin * dx);
         const pStartY = Math.round(line.y1 + tMin * dy);
         if (Math.hypot(pStartX - line.x1, pStartY - line.y1) >= 12) {
@@ -373,10 +686,10 @@ function Map() {
             y1: line.y1,
             x2: pStartX,
             y2: pStartY,
+            sectorId: activeSector,
           });
         }
 
-        // Parte posterior ao trecho removido
         const pEndX = Math.round(line.x1 + tMax * dx);
         const pEndY = Math.round(line.y1 + tMax * dy);
         if (Math.hypot(line.x2 - pEndX, line.y2 - pEndY) >= 12) {
@@ -387,6 +700,7 @@ function Map() {
             y1: pEndY,
             x2: line.x2,
             y2: line.y2,
+            sectorId: activeSector,
           });
         }
       } else {
@@ -394,22 +708,33 @@ function Map() {
       }
     }
 
-    setCorridorLines(updated);
+    setAllCorridorLines(updated);
     persistCorridorLines(updated);
-    rebuildGraph(storeList, locationPoints, updated);
+    rebuildGraphForSector(activeSector, storeList, allLocationPoints, updated);
   }
 
   function clearAllCorridorLines() {
-    setCorridorLines([]);
-    persistCorridorLines([]);
-    rebuildGraph(storeList, locationPoints, []);
+    const updated = allCorridorLines.filter(
+      (l) => normalizeSector(l.sectorId) !== activeSector
+    );
+    setAllCorridorLines(updated);
+    persistCorridorLines(updated);
+    rebuildGraphForSector(activeSector, storeList, allLocationPoints, updated);
   }
 
   function resetDefaultCorridorLines() {
-    const defaults = getDefaultCorridorLines();
-    setCorridorLines(defaults);
-    persistCorridorLines(defaults);
-    rebuildGraph(storeList, locationPoints, defaults);
+    const others = allCorridorLines.filter(
+      (l) => normalizeSector(l.sectorId) !== activeSector
+    );
+    const defaults = getDefaultCorridorLines().map((l) => ({
+      ...l,
+      id: activeSector === "verde" ? l.id : `${activeSector}_${l.id}`,
+      sectorId: activeSector,
+    }));
+    const updated = [...others, ...defaults];
+    setAllCorridorLines(updated);
+    persistCorridorLines(updated);
+    rebuildGraphForSector(activeSector, storeList, allLocationPoints, updated);
   }
 
   function importMapData(data: {
@@ -417,31 +742,45 @@ function Map() {
     locationPoints?: LocationPoint[];
     corridorLines?: CorridorLine[];
   }) {
-    const nextStores = Array.isArray(data.objects) ? data.objects : storeList;
+    const nextStores = Array.isArray(data.objects)
+      ? data.objects.map((o) => ({
+          ...o,
+          sectorId: normalizeSector(o.sectorId),
+        }))
+      : storeList;
     const nextPoints = Array.isArray(data.locationPoints)
-      ? data.locationPoints
-      : locationPoints;
+      ? data.locationPoints.map((p) => ({
+          ...p,
+          sectorId: normalizeSector(p.sectorId),
+        }))
+      : allLocationPoints;
     const nextCorridors = Array.isArray(data.corridorLines)
-      ? data.corridorLines
-      : corridorLines;
+      ? data.corridorLines.map((l) => ({
+          ...l,
+          sectorId: normalizeSector(l.sectorId),
+        }))
+      : allCorridorLines;
 
     setStoreList(nextStores);
     persistStores(nextStores);
 
-    setLocationPoints(nextPoints);
+    setAllLocationPoints(nextPoints);
     persistLocations(nextPoints);
 
-    setCorridorLines(nextCorridors);
+    setAllCorridorLines(nextCorridors);
     persistCorridorLines(nextCorridors);
 
+    const sectorPts = nextPoints.filter(
+      (p) => normalizeSector(p.sectorId) === activeSector
+    );
     if (
-      nextPoints.length > 0 &&
-      !nextPoints.some((p) => p.id === navigation.start)
+      sectorPts.length > 0 &&
+      !sectorPts.some((p) => p.id === navigation.start)
     ) {
-      setNavigation((prev) => ({ ...prev, start: nextPoints[0].id }));
+      setNavigation((prev) => ({ ...prev, start: sectorPts[0].id }));
     }
 
-    rebuildGraph(nextStores, nextPoints, nextCorridors);
+    rebuildGraphForSector(activeSector, nextStores, nextPoints, nextCorridors);
   }
 
   const navigationValue: NavigationContextType = {
@@ -452,6 +791,16 @@ function Map() {
   };
 
   const mapData: MapDataContextType = {
+    activeSector,
+    setActiveSector,
+    allObjects,
+    allLocationPoints,
+    allCorridorLines,
+    pendingCrossSectorRoute,
+    setPendingCrossSectorRoute,
+    navigateToStoreAcrossSectors,
+    continueCrossSectorRoute,
+
     objects,
     categories,
     addStore,

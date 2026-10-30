@@ -6,13 +6,14 @@ import {
   MapDataContextType,
   NavigationContextType,
   ObjectItem,
+  SECTOR_META_MAP,
 } from "../utils/types";
 import { MapBackground, Paths, Positions, Objects } from "./IndoorMap";
 import Controls from "./MapControls";
 import ObjectDetailsModal from "./ObjectDetailsDialog";
 import { navigateToObject, resetEdges } from "@/utils/navigationHelper";
 import { toast } from "react-toastify";
-import { FiX, FiCheckCircle, FiMapPin } from "react-icons/fi";
+import { FiX, FiCheckCircle, FiMapPin, FiArrowRight } from "react-icons/fi";
 
 function IndoorMapWrapper() {
   const [modalOpen, setModalOpen] = useState(false);
@@ -22,6 +23,11 @@ function IndoorMapWrapper() {
     NavigationContext
   ) as NavigationContextType;
   const {
+    activeSector,
+    setActiveSector,
+    pendingCrossSectorRoute,
+    setPendingCrossSectorRoute,
+    continueCrossSectorRoute,
     isDemarcating,
     setIsDemarcating,
     setDemarcationDraft,
@@ -63,7 +69,17 @@ function IndoorMapWrapper() {
 
   function handleNavigationClick() {
     setModalOpen(false);
+    setPendingCrossSectorRoute(null);
     navigateToObject(object.name, navigation, setNavigation);
+  }
+
+  function handlePortalSwitchSector(storeWithPortal: ObjectItem) {
+    if (!storeWithPortal.portalToSectorId) return;
+    setModalOpen(false);
+    setActiveSector(storeWithPortal.portalToSectorId);
+    toast.info(
+      `Você entrou no ${SECTOR_META_MAP[storeWithPortal.portalToSectorId].name}!`
+    );
   }
 
   function handleEditStoreClick(storeToEdit: ObjectItem) {
@@ -80,7 +96,61 @@ function IndoorMapWrapper() {
         onClose={() => setModalOpen((cur) => !cur)}
         objectNavigation={handleNavigationClick}
         onEditStore={handleEditStoreClick}
+        onEnterPortalSector={
+          object?.portalToSectorId
+            ? () => handlePortalSwitchSector(object)
+            : undefined
+        }
       />
+
+      {pendingCrossSectorRoute &&
+        !isDemarcating &&
+        !isAddingPoint &&
+        !isDrawingCorridor && (
+          <div className="absolute top-4 left-1/2 -translate-x-1/2 z-30 flex flex-wrap items-center gap-3 bg-indigo-900/95 text-white px-5 py-2.5 rounded-2xl shadow-2xl text-xs md:text-sm font-semibold border border-indigo-400">
+            <div className="flex flex-col">
+              <span className="text-[11px] uppercase tracking-wider text-indigo-200 font-bold">
+                Rota entre Setores ({SECTOR_META_MAP[activeSector].shortName} →{" "}
+                {
+                  SECTOR_META_MAP[pendingCrossSectorRoute.targetSectorId]
+                    .shortName
+                }
+                )
+              </span>
+              <span>
+                1º Siga a linha tracejada até{" "}
+                <strong>{pendingCrossSectorRoute.portalObject.name}</strong> •
+                Depois continue no{" "}
+                <strong>
+                  {SECTOR_META_MAP[pendingCrossSectorRoute.targetSectorId].name}
+                </strong>{" "}
+                até{" "}
+                <strong>
+                  {pendingCrossSectorRoute.finalDestinationObject.name}
+                </strong>
+              </span>
+            </div>
+            <button
+              type="button"
+              onClick={continueCrossSectorRoute}
+              className="bg-emerald-500 hover:bg-emerald-600 text-white px-3.5 py-1.5 rounded-xl font-bold text-xs flex items-center gap-1.5 shadow-md transition-colors"
+            >
+              <span>
+                Ver Continuação no{" "}
+                {SECTOR_META_MAP[pendingCrossSectorRoute.targetSectorId].name}
+              </span>
+              <FiArrowRight />
+            </button>
+            <button
+              type="button"
+              onClick={() => setPendingCrossSectorRoute(null)}
+              className="text-indigo-200 hover:text-white p-1"
+              title="Fechar aviso"
+            >
+              <FiX />
+            </button>
+          </div>
+        )}
 
       {isDemarcating && (
         <div className="absolute top-4 left-1/2 -translate-x-1/2 z-30 flex items-center gap-3 bg-blue-600 text-white px-5 py-2.5 rounded-full shadow-xl text-sm font-semibold animate-pulse">

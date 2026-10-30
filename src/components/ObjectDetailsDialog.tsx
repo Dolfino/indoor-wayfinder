@@ -1,5 +1,10 @@
-import { ObjectItem, STORE_TYPE_META, StoreType } from "@/utils/types";
-import { FiNavigation, FiEdit2 } from "react-icons/fi";
+import {
+  ObjectItem,
+  STORE_TYPE_META,
+  StoreType,
+  SECTOR_META_MAP,
+} from "@/utils/types";
+import { FiNavigation, FiEdit2, FiArrowRight } from "react-icons/fi";
 import { Dialog, DialogBody, DialogHeader } from "./ui/Dialog";
 
 interface ObjectItemDetailsDialogProps {
@@ -8,6 +13,7 @@ interface ObjectItemDetailsDialogProps {
   object: ObjectItem;
   objectNavigation: () => void;
   onEditStore?: (store: ObjectItem) => void;
+  onEnterPortalSector?: () => void;
 }
 
 function ObjectItemDetailsDialog({
@@ -16,9 +22,13 @@ function ObjectItemDetailsDialog({
   object,
   objectNavigation,
   onEditStore,
+  onEnterPortalSector,
 }: ObjectItemDetailsDialogProps) {
   const stType = (object.type || "loja") as StoreType;
   const meta = STORE_TYPE_META[stType] || STORE_TYPE_META.loja;
+  const portalTargetMeta = object.portalToSectorId
+    ? SECTOR_META_MAP[object.portalToSectorId]
+    : null;
 
   return (
     <>
@@ -41,12 +51,30 @@ function ObjectItemDetailsDialog({
           </div>
         </DialogHeader>
         <DialogBody>
-          <div className="mb-6">
+          <div className="mb-8">
             <p className="text-xl font-bold text-gray-900">
               {meta.isAccessOrService ? `${meta.icon} ` : ""}
               {object.name}
             </p>
             <p className="text-sm text-gray-600 mt-1">{object.desc}</p>
+            {portalTargetMeta && (
+              <div className="mt-3 p-2.5 rounded-lg bg-indigo-50 border border-indigo-200 flex items-center justify-between gap-2">
+                <span className="text-xs font-semibold text-indigo-900">
+                  🔗 Passagem / Conexão direta para o{" "}
+                  <strong>{portalTargetMeta.name}</strong>
+                </span>
+                {onEnterPortalSector && (
+                  <button
+                    type="button"
+                    onClick={onEnterPortalSector}
+                    className={`px-3 py-1 rounded-md text-xs font-bold flex items-center gap-1 ${portalTargetMeta.activeBtnClass}`}
+                  >
+                    <span>Abrir {portalTargetMeta.shortName}</span>
+                    <FiArrowRight />
+                  </button>
+                )}
+              </div>
+            )}
             {object.x !== undefined && object.y !== undefined && (
               <p className="text-xs text-gray-400 mt-2">
                 Posição: ({object.x}, {object.y}) • {object.width}×{object.height}px

@@ -1,5 +1,10 @@
 import { NavigationContext, MapDataContext } from "@/pages/Map";
-import { NavigationContextType, MapDataContextType } from "@/utils/types";
+import {
+  NavigationContextType,
+  MapDataContextType,
+  SECTORS,
+  SectorId,
+} from "@/utils/types";
 import { useContext } from "react";
 import { isDesktop } from "react-device-detect";
 import EditPositionButton from "./EditPositionButton";
@@ -13,6 +18,8 @@ function Toolbar() {
     NavigationContext
   ) as NavigationContextType;
   const {
+    activeSector,
+    setActiveSector,
     setIsConfigModalOpen,
     isDrawingCorridor,
     setIsDrawingCorridor,
@@ -21,8 +28,25 @@ function Toolbar() {
   } = useContext(MapDataContext) as MapDataContextType;
 
   return (
-    <div className="flex space-x-2 mb-4 h-12 relative items-center">
+    <div className="flex flex-wrap gap-2 mb-4 min-h-12 relative items-center">
       <SearchBar />
+
+      {/* Seletor rápido de Setor (útil em mobile e desktop) */}
+      <Tooltip content="Alternar Setor do Mapa" className="bg-slate-800">
+        <select
+          value={activeSector}
+          onChange={(e) => setActiveSector(e.target.value as SectorId)}
+          aria-label="Selecionar setor do mapa"
+          className="h-12 px-3 rounded bg-white border border-gray-200 text-xs font-bold text-gray-800 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer"
+        >
+          {SECTORS.map((sec) => (
+            <option key={sec.id} value={sec.id}>
+              📍 {sec.name}
+            </option>
+          ))}
+        </select>
+      </Tooltip>
+
       <EditPositionButton />
       <Tooltip
         content="Desenhar Retas dos Corredores (Malha de Rotas)"
@@ -36,7 +60,7 @@ function Toolbar() {
             setIsAddingPoint(false);
             setIsDrawingCorridor((prev) => !prev);
           }}
-          className={`ml-1 h-12 w-12 center rounded text-white shadow-sm transition-colors ${
+          className={`h-12 w-12 center rounded text-white shadow-sm transition-colors ${
             isDrawingCorridor
               ? "bg-orange-600 ring-2 ring-orange-300"
               : "bg-orange-500 hover:bg-orange-600"
@@ -50,7 +74,7 @@ function Toolbar() {
         <button
           type="button"
           onClick={() => setIsConfigModalOpen(true)}
-          className="ml-1 h-12 w-12 bg-slate-800 hover:bg-slate-900 center rounded text-white shadow-sm transition-colors"
+          className="h-12 w-12 bg-slate-800 hover:bg-slate-900 center rounded text-white shadow-sm transition-colors"
           aria-label="configurações e demarcação"
         >
           <FiSettings className="text-lg" />

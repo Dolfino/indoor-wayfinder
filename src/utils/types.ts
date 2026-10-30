@@ -1,3 +1,71 @@
+export type SectorId = "verde" | "azul" | "amarelo" | "roxo" | "branco";
+
+export interface SectorMeta {
+  id: SectorId;
+  name: string;
+  shortName: string;
+  dotColor: string;
+  badgeClass: string;
+  activeBtnClass: string;
+  headerBgClass: string;
+}
+
+export const SECTORS: SectorMeta[] = [
+  {
+    id: "verde",
+    name: "Setor Verde",
+    shortName: "Verde",
+    dotColor: "#16a34a",
+    badgeClass: "bg-emerald-100 text-emerald-800 border-emerald-300",
+    activeBtnClass: "bg-emerald-600 text-white border-emerald-700 shadow-sm",
+    headerBgClass: "bg-emerald-50 text-emerald-800 border-emerald-300",
+  },
+  {
+    id: "azul",
+    name: "Setor Azul",
+    shortName: "Azul",
+    dotColor: "#2563eb",
+    badgeClass: "bg-blue-100 text-blue-800 border-blue-300",
+    activeBtnClass: "bg-blue-600 text-white border-blue-700 shadow-sm",
+    headerBgClass: "bg-blue-50 text-blue-800 border-blue-300",
+  },
+  {
+    id: "amarelo",
+    name: "Setor Amarelo",
+    shortName: "Amarelo",
+    dotColor: "#eab308",
+    badgeClass: "bg-amber-100 text-amber-800 border-amber-300",
+    activeBtnClass: "bg-amber-500 text-white border-amber-600 shadow-sm",
+    headerBgClass: "bg-amber-50 text-amber-800 border-amber-300",
+  },
+  {
+    id: "roxo",
+    name: "Setor Roxo/Lilás",
+    shortName: "Roxo/Lilás",
+    dotColor: "#9333ea",
+    badgeClass: "bg-purple-100 text-purple-800 border-purple-300",
+    activeBtnClass: "bg-purple-600 text-white border-purple-700 shadow-sm",
+    headerBgClass: "bg-purple-50 text-purple-800 border-purple-300",
+  },
+  {
+    id: "branco",
+    name: "Setor Branco/Cinza",
+    shortName: "Branco/Cinza",
+    dotColor: "#64748b",
+    badgeClass: "bg-slate-100 text-slate-800 border-slate-300",
+    activeBtnClass: "bg-slate-700 text-white border-slate-800 shadow-sm",
+    headerBgClass: "bg-slate-100 text-slate-800 border-slate-300",
+  },
+];
+
+export const SECTOR_META_MAP: Record<SectorId, SectorMeta> = SECTORS.reduce(
+  (acc, s) => {
+    acc[s.id] = s;
+    return acc;
+  },
+  {} as Record<SectorId, SectorMeta>
+);
+
 export type StoreType =
   | "loja"
   | "box"
@@ -60,7 +128,7 @@ export const STORE_TYPE_META: Record<
     isAccessOrService: true,
   },
   entrada_saida: {
-    label: "Entrada / Saída / Acesso",
+    label: "Entrada / Saída / Passagem",
     icon: "🚪",
     badgeClass: "bg-rose-100 text-rose-800 border-rose-300",
     isAccessOrService: true,
@@ -80,6 +148,11 @@ export interface ObjectItem {
   categoryId: string;
   categoryName?: string;
   type?: StoreType;
+  sectorId?: SectorId;
+  /** Se este local/acesso é um portal de passagem para outro setor */
+  portalToSectorId?: SectorId;
+  /** ID opcional do portal/ponto correspondente no setor de destino */
+  portalTargetObjectId?: string;
   x?: number;
   y?: number;
   width?: number;
@@ -93,6 +166,7 @@ export interface LocationPoint {
   name: string;
   cx: number;
   cy: number;
+  sectorId?: SectorId;
 }
 
 export interface CorridorLine {
@@ -102,6 +176,13 @@ export interface CorridorLine {
   y1: number;
   x2: number;
   y2: number;
+  sectorId?: SectorId;
+}
+
+export interface CrossSectorTransition {
+  portalObject: ObjectItem;
+  targetSectorId: SectorId;
+  finalDestinationObject: ObjectItem;
 }
 
 export interface Category {
@@ -135,6 +216,22 @@ export interface DemarcationDraft {
 }
 
 export interface MapDataContextType {
+  // Setor Ativo & Lista Completa (Multi-setor)
+  activeSector: SectorId;
+  setActiveSector: (sector: SectorId) => void;
+  allObjects: ObjectItem[];
+  allLocationPoints: LocationPoint[];
+  allCorridorLines: CorridorLine[];
+
+  // Transição entre setores (Rota Multi-Setor)
+  pendingCrossSectorRoute: CrossSectorTransition | null;
+  setPendingCrossSectorRoute: React.Dispatch<
+    React.SetStateAction<CrossSectorTransition | null>
+  >;
+  navigateToStoreAcrossSectors: (targetStore: ObjectItem) => void;
+  continueCrossSectorRoute: () => void;
+
+  // Dados filtrados do setor ativo
   objects: ObjectItem[];
   categories: Category[];
   addStore: (store: Omit<ObjectItem, "id"> & { id?: string }) => void;

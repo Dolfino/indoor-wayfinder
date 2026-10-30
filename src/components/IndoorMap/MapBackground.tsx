@@ -1,8 +1,20 @@
-import floorplan from "@/assets/img/centro-fashion-setor-verde.webp";
+import floorplanVerde from "@/assets/img/centro-fashion-setor-verde.webp";
+import floorplanAzul from "@/assets/img/centro-fashion-setor-azul.webp";
+import floorplanAmarelo from "@/assets/img/centro-fashion-setor-amarelo.webp";
+import floorplanRoxo from "@/assets/img/centro-fashion-setor-roxo.webp";
+import floorplanBranco from "@/assets/img/centro-fashion-setor-branco.webp";
 import { ReactNode, useContext, useRef, useState, PointerEvent } from "react";
 import { MapDataContext } from "@/pages/Map";
-import { MapDataContextType } from "@/utils/types";
+import { MapDataContextType, SectorId, SECTOR_META_MAP } from "@/utils/types";
 import { toast } from "react-toastify";
+
+const SECTOR_FLOORPLANS: Record<SectorId, string> = {
+  verde: floorplanVerde,
+  azul: floorplanAzul,
+  amarelo: floorplanAmarelo,
+  roxo: floorplanRoxo,
+  branco: floorplanBranco,
+};
 
 interface MapBackgroundProps {
   children: ReactNode;
@@ -10,6 +22,7 @@ interface MapBackgroundProps {
 
 function MapBackground({ children }: MapBackgroundProps) {
   const {
+    activeSector,
     isDemarcating,
     setIsDemarcating,
     demarcationDraft,
@@ -23,6 +36,9 @@ function MapBackground({ children }: MapBackgroundProps) {
     addCorridorLine,
     isDrawingCorridor,
   } = useContext(MapDataContext) as MapDataContextType;
+
+  const floorplan = SECTOR_FLOORPLANS[activeSector] || floorplanVerde;
+  const sectorMeta = SECTOR_META_MAP[activeSector];
 
   const svgRef = useRef<SVGSVGElement>(null);
   const startPoint = useRef<{ x: number; y: number } | null>(null);
@@ -213,7 +229,7 @@ function MapBackground({ children }: MapBackgroundProps) {
           ? "cursor-crosshair select-none"
           : ""
       }`}
-      aria-label="Planta Centro Fashion - Setor Verde"
+      aria-label={`Planta Centro Fashion - ${sectorMeta.name}`}
       onPointerDown={handlePointerDown}
       onPointerMove={handlePointerMove}
       onPointerUp={handlePointerUp}
