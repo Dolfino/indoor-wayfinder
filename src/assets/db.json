@@ -500,6 +500,41 @@
       "cx": 575,
       "cy": 280,
       "sectorId": "verde"
+    },
+    {
+      "id": "v_azul_entrada_sul",
+      "name": "Entrada Sul - Av. Alberto Nepomuceno",
+      "cx": 1429,
+      "cy": 3410,
+      "sectorId": "azul"
+    },
+    {
+      "id": "v_azul_centro",
+      "name": "Corredor Central - Floriano Peixoto",
+      "cx": 1312,
+      "cy": 1980,
+      "sectorId": "azul"
+    },
+    {
+      "id": "v_azul_esteira",
+      "name": "Acesso Esteira Rolante / Elevador",
+      "cx": 1196,
+      "cy": 1190,
+      "sectorId": "azul"
+    },
+    {
+      "id": "v_azul_norte",
+      "name": "Corredor Norte - Major Facundo",
+      "cx": 1429,
+      "cy": 360,
+      "sectorId": "azul"
+    },
+    {
+      "id": "v_azul_leste_estacionamento",
+      "name": "Acesso Estacionamento Leste",
+      "cx": 2242,
+      "cy": 2724,
+      "sectorId": "azul"
     }
   ],
   "corridorLines": [
@@ -889,6 +924,240 @@
       "y2": 3458,
       "id": "cor-1793390142389",
       "sectorId": "verde"
+    },
+    {
+      "id": "line_azul_street_dom_manuel",
+      "name": "Av. Dom Manuel",
+      "x1": 520,
+      "y1": 360,
+      "x2": 520,
+      "y2": 3410,
+      "sectorId": "azul"
+    },
+    {
+      "id": "line_azul_street_25_marco",
+      "name": "Rua 25 de Março",
+      "x1": 580,
+      "y1": 360,
+      "x2": 580,
+      "y2": 3410,
+      "sectorId": "azul"
+    },
+    {
+      "id": "line_azul_street_coronel_ferraz",
+      "name": "Rua Coronel Ferraz",
+      "x1": 732,
+      "y1": 360,
+      "x2": 732,
+      "y2": 3410,
+      "sectorId": "azul"
+    },
+    {
+      "id": "line_azul_street_sao_jose",
+      "name": "Rua São José",
+      "x1": 848,
+      "y1": 360,
+      "x2": 848,
+      "y2": 3410,
+      "sectorId": "azul"
+    },
+    {
+      "id": "line_azul_street_gov_sampaio",
+      "name": "Rua Governador Sampaio",
+      "x1": 964,
+      "y1": 360,
+      "x2": 964,
+      "y2": 3410,
+      "sectorId": "azul"
+    },
+    {
+      "id": "line_azul_street_conde_deu",
+      "name": "Rua Conde d'Eu",
+      "x1": 1080,
+      "y1": 360,
+      "x2": 1080,
+      "y2": 3410,
+      "sectorId": "azul"
+    },
+    {
+      "id": "line_azul_street_gen_bezerril",
+      "name": "Rua General Bezerril",
+      "x1": 1196,
+      "y1": 360,
+      "x2": 1196,
+      "y2": 3410,
+      "sectorId": "azul"
+    },
+    {
+      "id": "line_azul_street_floriano_peixoto",
+      "name": "Rua Floriano Peixoto",
+      "x1": 1312,
+      "y1": 360,
+      "x2": 1312,
+      "y2": 3410,
+      "sectorId": "azul"
+    },
+    {
+      "id": "line_azul_street_major_facundo",
+      "name": "Rua Major Facundo",
+      "x1": 1429,
+      "y1": 360,
+      "x2": 1429,
+      "y2": 3410,
+      "sectorId": "azul"
+    },
+    {
+      "id": "line_azul_street_barao_rio_branco",
+      "name": "Rua Barão do Rio Branco",
+      "x1": 1545,
+      "y1": 360,
+      "x2": 1545,
+      "y2": 3410,
+      "sectorId": "azul"
+    },
+    {
+      "id": "line_azul_street_senador_pompeu",
+      "name": "Rua Senador Pompeu",
+      "x1": 1661,
+      "y1": 360,
+      "x2": 1661,
+      "y2": 3410,
+      "sectorId": "azul"
+    },
+    {
+      "id": "line_azul_street_gen_sampaio",
+      "name": "Rua General Sampaio",
+      "x1": 1777,
+      "y1": 360,
+      "x2": 1777,
+      "y2": 3410,
+      "sectorId": "azul"
+    },
+    {
+      "id": "line_azul_street_24_maio",
+      "name": "Rua 24 de Maio",
+      "x1": 1894,
+      "y1": 360,
+      "x2": 1894,
+      "y2": 3410,
+      "sectorId": "azul"
+    },
+    {
+      "id": "line_azul_street_tristao_goncalves",
+      "name": "Rua Tristão Gonçalves",
+      "x1": 2010,
+      "y1": 360,
+      "x2": 2010,
+      "y2": 3410,
+      "sectorId": "azul"
+    },
+    {
+      "id": "line_azul_street_imperador",
+      "name": "Av. do Imperador",
+      "x1": 2126,
+      "y1": 360,
+      "x2": 2126,
+      "y2": 3410,
+      "sectorId": "azul"
+    },
+    {
+      "id": "line_azul_street_princesa_isabel",
+      "name": "Rua Princesa Isabel",
+      "x1": 2242,
+      "y1": 360,
+      "x2": 2242,
+      "y2": 3410,
+      "sectorId": "azul"
+    },
+    {
+      "id": "line_azul_trans_norte",
+      "name": "Corredor Norte (Setor Azul)",
+      "x1": 520,
+      "y1": 360,
+      "x2": 2242,
+      "y2": 360,
+      "sectorId": "azul"
+    },
+    {
+      "id": "line_azul_trans_trans_sup_1",
+      "name": "Transversal Superior 1",
+      "x1": 520,
+      "y1": 740,
+      "x2": 2242,
+      "y2": 740,
+      "sectorId": "azul"
+    },
+    {
+      "id": "line_azul_trans_esteira_sup",
+      "name": "Transversal Patamar / Esteira",
+      "x1": 520,
+      "y1": 1190,
+      "x2": 2242,
+      "y2": 1190,
+      "sectorId": "azul"
+    },
+    {
+      "id": "line_azul_trans_meio_1",
+      "name": "Transversal Central 1",
+      "x1": 520,
+      "y1": 1748,
+      "x2": 2242,
+      "y2": 1748,
+      "sectorId": "azul"
+    },
+    {
+      "id": "line_azul_trans_meio_2",
+      "name": "Transversal Central 2",
+      "x1": 520,
+      "y1": 1980,
+      "x2": 2242,
+      "y2": 1980,
+      "sectorId": "azul"
+    },
+    {
+      "id": "line_azul_trans_inf_1",
+      "name": "Transversal Meio Inferior",
+      "x1": 520,
+      "y1": 2260,
+      "x2": 2242,
+      "y2": 2260,
+      "sectorId": "azul"
+    },
+    {
+      "id": "line_azul_trans_inf_2",
+      "name": "Transversal Inferior",
+      "x1": 520,
+      "y1": 2724,
+      "x2": 2242,
+      "y2": 2724,
+      "sectorId": "azul"
+    },
+    {
+      "id": "line_azul_trans_sul",
+      "name": "Av. Alberto Nepomuceno (Ala Sul)",
+      "x1": 520,
+      "y1": 3410,
+      "x2": 2242,
+      "y2": 3410,
+      "sectorId": "azul"
+    },
+    {
+      "id": "line_azul_acesso_estacionamento",
+      "name": "Acesso Estacionamento Leste",
+      "x1": 2242,
+      "y1": 2724,
+      "x2": 2442,
+      "y2": 2724,
+      "sectorId": "azul"
+    },
+    {
+      "id": "line_azul_corredor_leste",
+      "name": "Corredor Leste (Estacionamento)",
+      "x1": 2442,
+      "y1": 1000,
+      "x2": 2442,
+      "y2": 3290,
+      "sectorId": "azul"
     }
   ]
 }

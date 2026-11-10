@@ -38,6 +38,7 @@ const STORAGE_KEY_STORES = "centro-fashion:stores-v3";
 const STORAGE_KEY_LOCATIONS = "centro-fashion:locations-v1";
 const STORAGE_KEY_CORRIDORS = "centro-fashion:corridors-v1";
 const DEFAULT_POSITION = "v_pedro_pereira_centro";
+const SUPPORTED_SECTORS: SectorId[] = ["verde", "azul"];
 
 function normalizeSector(sectorId?: string): SectorId {
   if (
@@ -114,18 +115,21 @@ function loadLocations(): LocationPoint[] {
   }
 
   const dbPoints = ((db as any).locationPoints as LocationPoint[] | undefined) || [];
-  const existingSectors = new Set(points.map((p) => p.sectorId));
-  dbPoints.forEach((dbp) => {
-    const sec = normalizeSector(dbp.sectorId);
-    if (!existingSectors.has(sec)) {
-      points.push({ ...dbp, sectorId: sec });
+
+  // Garante que cada setor suportado tenha seus pontos carregados
+  SUPPORTED_SECTORS.forEach((sec) => {
+    const hasPoints = points.some((p) => normalizeSector(p.sectorId) === sec);
+    if (!hasPoints) {
+      const fromDb = dbPoints.filter((dbp) => normalizeSector(dbp.sectorId) === sec);
+      if (fromDb.length > 0) {
+        points.push(...fromDb.map((p) => ({ ...p, sectorId: sec })));
+      } else {
+        points.push(...getDefaultLocationPoints(sec));
+      }
     }
   });
 
-  if (points.length > 0) {
-    return points;
-  }
-  return getDefaultLocationPoints("verde");
+  return points;
 }
 
 function persistLocations(points: LocationPoint[]) {
@@ -154,18 +158,21 @@ function loadCorridorLines(): CorridorLine[] {
   }
 
   const dbCorridors = ((db as any).corridorLines as CorridorLine[] | undefined) || [];
-  const existingSectors = new Set(lines.map((l) => l.sectorId));
-  dbCorridors.forEach((dbc) => {
-    const sec = normalizeSector(dbc.sectorId);
-    if (!existingSectors.has(sec)) {
-      lines.push({ ...dbc, sectorId: sec });
+
+  // Garante que cada setor suportado tenha suas retas de corredores carregadas
+  SUPPORTED_SECTORS.forEach((sec) => {
+    const hasLines = lines.some((l) => normalizeSector(l.sectorId) === sec);
+    if (!hasLines) {
+      const fromDb = dbCorridors.filter((dbc) => normalizeSector(dbc.sectorId) === sec);
+      if (fromDb.length > 0) {
+        lines.push(...fromDb.map((c) => ({ ...c, sectorId: sec })));
+      } else {
+        lines.push(...getDefaultCorridorLines(sec));
+      }
     }
   });
 
-  if (lines.length > 0) {
-    return lines;
-  }
-  return getDefaultCorridorLines("verde");
+  return lines;
 }
 
 function persistCorridorLines(lines: CorridorLine[]) {
@@ -179,16 +186,7 @@ function persistCorridorLines(lines: CorridorLine[]) {
 function Map() {
   const [searchParams, setSearchParams] = useSearchParams();
   const initialSector = normalizeSector(searchParams.get("sector") || "verde");
-  const startPosition = searchParams.get("position") || DEFAULT_POSITION;
-
-  const [activeSector, setActiveSectorState] = useState<SectorId>(initialSector);
-  const [navigation, setNavigation] = useState<Navigation>({
-    start: startPosition,
-    end: "",
-  });
-  const [isEditMode, setIsEditMode] = useState(false);
-  const [pendingCrossSectorRoute, setPendingCrossSectorRoute] =
-    useState<CrossSectorTransition | null>(null);
+  const rawPosition = searchParams.get("position");
 
   // CRUD Lojas / Estabelecimentos (Todos os setores)
   const [storeList, setStoreList] = useState<ObjectItem[]>(loadStores);
@@ -206,6 +204,25 @@ function Map() {
   const [allCorridorLines, setAllCorridorLines] = useState<CorridorLine[]>(loadCorridorLines);
   const [isDrawingCorridor, setIsDrawingCorridor] = useState(false);
   const [showCorridorLines, setShowCorridorLines] = useState(false);
+
+  const initialPointsForSector = useMemo(
+    () => allLocationPoints.filter((p) => normalizeSector(p.sectorId) === initialSector),
+    [allLocationPoints, initialSector]
+  );
+
+  const startPosition =
+    (rawPosition && allLocationPoints.some((p) => p.id === rawPosition) ? rawPosition : null) ||
+    initialPointsForSector[0]?.id ||
+    DEFAULT_POSITION;
+
+  const [activeSector, setActiveSectorState] = useState<SectorId>(initialSector);
+  const [navigation, setNavigation] = useState<Navigation>({
+    start: startPosition,
+    end: "",
+  });
+  const [isEditMode, setIsEditMode] = useState(false);
+  const [pendingCrossSectorRoute, setPendingCrossSectorRoute] =
+    useState<CrossSectorTransition | null>(null);
 
   const categories: Category[] = db.categories;
 
