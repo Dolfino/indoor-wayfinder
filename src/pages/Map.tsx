@@ -97,12 +97,13 @@ function persistStores(stores: ObjectItem[]) {
 }
 
 function loadLocations(): LocationPoint[] {
+  let points: LocationPoint[] = [];
   try {
     const raw = localStorage.getItem(STORAGE_KEY_LOCATIONS);
     if (raw) {
       const parsed = JSON.parse(raw);
       if (Array.isArray(parsed) && parsed.length > 0) {
-        return parsed.map((p: LocationPoint) => ({
+        points = parsed.map((p: LocationPoint) => ({
           ...p,
           sectorId: normalizeSector(p.sectorId),
         }));
@@ -111,17 +112,20 @@ function loadLocations(): LocationPoint[] {
   } catch {
     /* ignore */
   }
-  const dbPoints = (db as any).locationPoints as LocationPoint[] | undefined;
-  if (Array.isArray(dbPoints) && dbPoints.length > 0) {
-    return dbPoints.map((p) => ({
-      ...p,
-      sectorId: normalizeSector(p.sectorId),
-    }));
+
+  const dbPoints = ((db as any).locationPoints as LocationPoint[] | undefined) || [];
+  const existingSectors = new Set(points.map((p) => p.sectorId));
+  dbPoints.forEach((dbp) => {
+    const sec = normalizeSector(dbp.sectorId);
+    if (!existingSectors.has(sec)) {
+      points.push({ ...dbp, sectorId: sec });
+    }
+  });
+
+  if (points.length > 0) {
+    return points;
   }
-  return getDefaultLocationPoints().map((p) => ({
-    ...p,
-    sectorId: "verde" as SectorId,
-  }));
+  return getDefaultLocationPoints("verde");
 }
 
 function persistLocations(points: LocationPoint[]) {
@@ -133,12 +137,13 @@ function persistLocations(points: LocationPoint[]) {
 }
 
 function loadCorridorLines(): CorridorLine[] {
+  let lines: CorridorLine[] = [];
   try {
     const raw = localStorage.getItem(STORAGE_KEY_CORRIDORS);
     if (raw) {
       const parsed = JSON.parse(raw);
       if (Array.isArray(parsed) && parsed.length > 0) {
-        return parsed.map((l: CorridorLine) => ({
+        lines = parsed.map((l: CorridorLine) => ({
           ...l,
           sectorId: normalizeSector(l.sectorId),
         }));
@@ -147,17 +152,20 @@ function loadCorridorLines(): CorridorLine[] {
   } catch {
     /* ignore */
   }
-  const dbCorridors = (db as any).corridorLines as CorridorLine[] | undefined;
-  if (Array.isArray(dbCorridors) && dbCorridors.length > 0) {
-    return dbCorridors.map((l) => ({
-      ...l,
-      sectorId: normalizeSector(l.sectorId),
-    }));
+
+  const dbCorridors = ((db as any).corridorLines as CorridorLine[] | undefined) || [];
+  const existingSectors = new Set(lines.map((l) => l.sectorId));
+  dbCorridors.forEach((dbc) => {
+    const sec = normalizeSector(dbc.sectorId);
+    if (!existingSectors.has(sec)) {
+      lines.push({ ...dbc, sectorId: sec });
+    }
+  });
+
+  if (lines.length > 0) {
+    return lines;
   }
-  return getDefaultCorridorLines().map((l) => ({
-    ...l,
-    sectorId: "verde" as SectorId,
-  }));
+  return getDefaultCorridorLines("verde");
 }
 
 function persistCorridorLines(lines: CorridorLine[]) {
@@ -592,9 +600,8 @@ function Map() {
     const others = allLocationPoints.filter(
       (p) => normalizeSector(p.sectorId) !== activeSector
     );
-    const defaults = getDefaultLocationPoints().map((p) => ({
+    const defaults = getDefaultLocationPoints(activeSector).map((p) => ({
       ...p,
-      id: activeSector === "verde" ? p.id : `${activeSector}_${p.id}`,
       sectorId: activeSector,
     }));
     const updated = [...others, ...defaults];
@@ -726,9 +733,8 @@ function Map() {
     const others = allCorridorLines.filter(
       (l) => normalizeSector(l.sectorId) !== activeSector
     );
-    const defaults = getDefaultCorridorLines().map((l) => ({
+    const defaults = getDefaultCorridorLines(activeSector).map((l) => ({
       ...l,
-      id: activeSector === "verde" ? l.id : `${activeSector}_${l.id}`,
       sectorId: activeSector,
     }));
     const updated = [...others, ...defaults];

@@ -1,4 +1,4 @@
-import { ObjectItem, LocationPoint, CorridorLine } from "./types";
+import { ObjectItem, LocationPoint, CorridorLine, SectorId } from "./types";
 import { EdgeData, GraphData, VertexData } from "@/store/graphData";
 
 export const CORRIDOR_STREETS = [
@@ -26,6 +26,36 @@ export const CORRIDOR_TRANSVERSAIS = [
   { id: "sul", name: "Corredor Ala Sul", y: 3036 },
 ];
 
+export const CORRIDOR_STREETS_AZUL = [
+  { id: "dom_manuel", name: "Av. Dom Manuel", x: 520 },
+  { id: "25_marco", name: "Rua 25 de Março", x: 580 },
+  { id: "coronel_ferraz", name: "Rua Coronel Ferraz", x: 732 },
+  { id: "sao_jose", name: "Rua São José", x: 848 },
+  { id: "gov_sampaio", name: "Rua Governador Sampaio", x: 964 },
+  { id: "conde_deu", name: "Rua Conde d'Eu", x: 1080 },
+  { id: "gen_bezerril", name: "Rua General Bezerril", x: 1196 },
+  { id: "floriano_peixoto", name: "Rua Floriano Peixoto", x: 1312 },
+  { id: "major_facundo", name: "Rua Major Facundo", x: 1429 },
+  { id: "barao_rio_branco", name: "Rua Barão do Rio Branco", x: 1545 },
+  { id: "senador_pompeu", name: "Rua Senador Pompeu", x: 1661 },
+  { id: "gen_sampaio", name: "Rua General Sampaio", x: 1777 },
+  { id: "24_maio", name: "Rua 24 de Maio", x: 1894 },
+  { id: "tristao_goncalves", name: "Rua Tristão Gonçalves", x: 2010 },
+  { id: "imperador", name: "Av. do Imperador", x: 2126 },
+  { id: "princesa_isabel", name: "Rua Princesa Isabel", x: 2242 },
+];
+
+export const CORRIDOR_TRANSVERSAIS_AZUL = [
+  { id: "norte", name: "Corredor Norte (Setor Azul)", y: 360 },
+  { id: "trans_sup_1", name: "Transversal Superior 1", y: 740 },
+  { id: "esteira_sup", name: "Transversal Patamar / Esteira", y: 1190 },
+  { id: "meio_1", name: "Transversal Central 1", y: 1748 },
+  { id: "meio_2", name: "Transversal Central 2", y: 1980 },
+  { id: "inf_1", name: "Transversal Meio Inferior", y: 2260 },
+  { id: "inf_2", name: "Transversal Inferior", y: 2724 },
+  { id: "sul", name: "Av. Alberto Nepomuceno (Ala Sul)", y: 3410 },
+];
+
 export const SOUTH_AISLE = {
   y: 3036,
   streets: [
@@ -47,7 +77,17 @@ export const SOUTH_AISLE = {
 /**
  * Gera a lista padrão de pontos de localização dos corredores
  */
-export function getDefaultLocationPoints(): LocationPoint[] {
+export function getDefaultLocationPoints(sector: SectorId = "verde"): LocationPoint[] {
+  if (sector === "azul") {
+    return [
+      { id: "v_azul_entrada_sul", name: "Entrada Sul - Av. Alberto Nepomuceno", cx: 1429, cy: 3410, sectorId: "azul" },
+      { id: "v_azul_centro", name: "Corredor Central - Floriano Peixoto", cx: 1312, cy: 1980, sectorId: "azul" },
+      { id: "v_azul_esteira", name: "Acesso Esteira Rolante / Elevador", cx: 1196, cy: 1190, sectorId: "azul" },
+      { id: "v_azul_norte", name: "Corredor Norte - Major Facundo", cx: 1429, cy: 360, sectorId: "azul" },
+      { id: "v_azul_leste_estacionamento", name: "Acesso Estacionamento Leste", cx: 2242, cy: 2724, sectorId: "azul" },
+    ];
+  }
+
   const points: LocationPoint[] = [];
 
   const mainTransversais = ["norte", "meio_sup", "centro", "meio_inf"];
@@ -58,6 +98,7 @@ export function getDefaultLocationPoints(): LocationPoint[] {
         name: `${s.name} - ${t.name}`,
         cx: s.x,
         cy: t.y,
+        sectorId: "verde",
       });
     });
   });
@@ -70,6 +111,7 @@ export function getDefaultLocationPoints(): LocationPoint[] {
         name: `${street.name} - Ala Sul`,
         cx: street.x,
         cy: SOUTH_AISLE.y,
+        sectorId: "verde",
       });
     }
   });
@@ -78,9 +120,58 @@ export function getDefaultLocationPoints(): LocationPoint[] {
 }
 
 /**
- * Gera as retas padrão dos corredores do Setor Verde (12 ruas verticais + 7 transversais + corredor sanitários leste)
+ * Gera as retas padrão dos corredores do Setor especificado
  */
-export function getDefaultCorridorLines(): CorridorLine[] {
+export function getDefaultCorridorLines(sector: SectorId = "verde"): CorridorLine[] {
+  if (sector === "azul") {
+    const lines: CorridorLine[] = [];
+    CORRIDOR_STREETS_AZUL.forEach((s) => {
+      lines.push({
+        id: `line_azul_street_${s.id}`,
+        name: s.name,
+        x1: s.x,
+        y1: 360,
+        x2: s.x,
+        y2: 3410,
+        sectorId: "azul",
+      });
+    });
+
+    CORRIDOR_TRANSVERSAIS_AZUL.forEach((t) => {
+      lines.push({
+        id: `line_azul_trans_${t.id}`,
+        name: t.name,
+        x1: 520,
+        y1: t.y,
+        x2: 2242,
+        y2: t.y,
+        sectorId: "azul",
+      });
+    });
+
+    lines.push({
+      id: "line_azul_acesso_estacionamento",
+      name: "Acesso Estacionamento Leste",
+      x1: 2242,
+      y1: 2724,
+      x2: 2442,
+      y2: 2724,
+      sectorId: "azul",
+    });
+
+    lines.push({
+      id: "line_azul_corredor_leste",
+      name: "Corredor Leste (Estacionamento)",
+      x1: 2442,
+      y1: 1000,
+      x2: 2442,
+      y2: 3290,
+      sectorId: "azul",
+    });
+
+    return lines;
+  }
+
   const lines: CorridorLine[] = [];
 
   // 12 Ruas Verticais (do Norte y=358 ao Sul y=3036)
@@ -92,6 +183,7 @@ export function getDefaultCorridorLines(): CorridorLine[] {
       y1: 358,
       x2: s.x,
       y2: 3036,
+      sectorId: "verde",
     });
   });
 
@@ -104,6 +196,7 @@ export function getDefaultCorridorLines(): CorridorLine[] {
       y1: t.y,
       x2: 2106,
       y2: t.y,
+      sectorId: "verde",
     });
   });
 
@@ -115,6 +208,7 @@ export function getDefaultCorridorLines(): CorridorLine[] {
     y1: 2042,
     x2: 2385,
     y2: 2042,
+    sectorId: "verde",
   });
   lines.push({
     id: "line_corredor_sanitarios_leste",
@@ -123,6 +217,7 @@ export function getDefaultCorridorLines(): CorridorLine[] {
     y1: 1850,
     x2: 2385,
     y2: 2550,
+    sectorId: "verde",
   });
 
   return lines;
