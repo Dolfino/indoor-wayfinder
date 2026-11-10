@@ -56,6 +56,37 @@ export const CORRIDOR_TRANSVERSAIS_AZUL = [
   { id: "sul", name: "Av. Alberto Nepomuceno (Ala Sul)", y: 3410 },
 ];
 
+export const CORRIDOR_STREETS_AMARELO = [
+  { id: "dom_manuel", name: "Av. Dom Manuel", x: 530 },
+  { id: "25_marco", name: "Rua 25 de Março", x: 638 },
+  { id: "coronel_ferraz", name: "Rua Coronel Ferraz", x: 804 },
+  { id: "sao_jose", name: "Rua São José", x: 936 },
+  { id: "gov_sampaio", name: "Rua Governador Sampaio", x: 1067 },
+  { id: "conde_deu", name: "Rua Conde d'Eu", x: 1199 },
+  { id: "gen_bezerril", name: "Rua General Bezerril", x: 1330 },
+  { id: "floriano_peixoto", name: "Rua Floriano Peixoto", x: 1461 },
+  { id: "major_facundo", name: "Rua Major Facundo", x: 1593 },
+  { id: "barao_rio_branco", name: "Rua Barão do Rio Branco", x: 1724 },
+  { id: "senador_pompeu", name: "Rua Senador Pompeu", x: 1856 },
+  { id: "gen_sampaio", name: "Rua General Sampaio", x: 1986 },
+  { id: "24_maio", name: "Rua 24 de Maio", x: 2118 },
+  { id: "tristao_goncalves", name: "Rua Tristão Gonçalves", x: 2249 },
+  { id: "imperador", name: "Av. do Imperador", x: 2380 },
+  { id: "princesa_isabel", name: "Rua Princesa Isabel", x: 2480 },
+];
+
+export const CORRIDOR_TRANSVERSAIS_AMARELO = [
+  { id: "norte", name: "Corredor Norte (Praça de Alimentação)", y: 360 },
+  { id: "alimentacao_mesas", name: "Transversal Mesas / Alimentação", y: 620 },
+  { id: "trans_sup", name: "Transversal Superior dos Corredores", y: 1120 },
+  { id: "esteira_sup", name: "Transversal Patamar Superior", y: 1650 },
+  { id: "esteira_centro", name: "Transversal Central (Esteira / Elevador)", y: 1940 },
+  { id: "esteira_inf", name: "Transversal Patamar Inferior", y: 2150 },
+  { id: "carapinima", name: "Av. Carapinima", y: 3040 },
+  { id: "jose_avelino", name: "Rua José Avelino", y: 3295 },
+  { id: "sul", name: "Av. Alberto Nepomuceno (Ala Sul)", y: 3510 },
+];
+
 export const SOUTH_AISLE = {
   y: 3036,
   streets: [
@@ -85,6 +116,17 @@ export function getDefaultLocationPoints(sector: SectorId = "verde"): LocationPo
       { id: "v_azul_esteira", name: "Acesso Esteira Rolante / Elevador", cx: 1196, cy: 1190, sectorId: "azul" },
       { id: "v_azul_norte", name: "Corredor Norte - Major Facundo", cx: 1429, cy: 360, sectorId: "azul" },
       { id: "v_azul_leste_estacionamento", name: "Acesso Estacionamento Leste", cx: 2242, cy: 2724, sectorId: "azul" },
+    ];
+  }
+
+  if (sector === "amarelo") {
+    return [
+      { id: "v_amarelo_entrada_sul", name: "Entrada Sul - Av. Alberto Nepomuceno", cx: 1461, cy: 3510, sectorId: "amarelo" },
+      { id: "v_amarelo_centro", name: "Corredor Central - Floriano Peixoto", cx: 1461, cy: 1940, sectorId: "amarelo" },
+      { id: "v_amarelo_esteira", name: "Acesso Esteira Rolante / Elevador", cx: 1199, cy: 1940, sectorId: "amarelo" },
+      { id: "v_amarelo_alimentacao", name: "Praça de Alimentação", cx: 1461, cy: 360, sectorId: "amarelo" },
+      { id: "v_amarelo_carapinima", name: "Av. Carapinima - Acesso Sul", cx: 1461, cy: 3040, sectorId: "amarelo" },
+      { id: "v_amarelo_leste", name: "Acesso Leste - Rua Princesa Isabel", cx: 2480, cy: 3040, sectorId: "amarelo" },
     ];
   }
 
@@ -167,6 +209,46 @@ export function getDefaultCorridorLines(sector: SectorId = "verde"): CorridorLin
       x2: 2442,
       y2: 3290,
       sectorId: "azul",
+    });
+
+    return lines;
+  }
+
+  if (sector === "amarelo") {
+    const lines: CorridorLine[] = [];
+    CORRIDOR_STREETS_AMARELO.forEach((s) => {
+      lines.push({
+        id: `line_amarelo_street_${s.id}`,
+        name: s.name,
+        x1: s.x,
+        y1: 360,
+        x2: s.x,
+        y2: 3510,
+        sectorId: "amarelo",
+      });
+    });
+
+    CORRIDOR_TRANSVERSAIS_AMARELO.forEach((t) => {
+      lines.push({
+        id: `line_amarelo_trans_${t.id}`,
+        name: t.name,
+        x1: 530,
+        y1: t.y,
+        x2: 2480,
+        y2: t.y,
+        sectorId: "amarelo",
+      });
+    });
+
+    // Acesso Leste (Estacionamento / Sanitários)
+    lines.push({
+      id: "line_amarelo_acesso_leste",
+      name: "Acesso Leste (Estacionamento)",
+      x1: 2480,
+      y1: 3040,
+      x2: 2580,
+      y2: 3040,
+      sectorId: "amarelo",
     });
 
     return lines;

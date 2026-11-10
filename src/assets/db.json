@@ -535,6 +535,48 @@
       "cx": 2242,
       "cy": 2724,
       "sectorId": "azul"
+    },
+    {
+      "id": "v_amarelo_entrada_sul",
+      "name": "Entrada Sul - Av. Alberto Nepomuceno",
+      "cx": 1461,
+      "cy": 3510,
+      "sectorId": "amarelo"
+    },
+    {
+      "id": "v_amarelo_centro",
+      "name": "Corredor Central - Floriano Peixoto",
+      "cx": 1461,
+      "cy": 1940,
+      "sectorId": "amarelo"
+    },
+    {
+      "id": "v_amarelo_esteira",
+      "name": "Acesso Esteira Rolante / Elevador",
+      "cx": 1199,
+      "cy": 1940,
+      "sectorId": "amarelo"
+    },
+    {
+      "id": "v_amarelo_alimentacao",
+      "name": "Praça de Alimentação",
+      "cx": 1461,
+      "cy": 360,
+      "sectorId": "amarelo"
+    },
+    {
+      "id": "v_amarelo_carapinima",
+      "name": "Av. Carapinima - Acesso Sul",
+      "cx": 1461,
+      "cy": 3040,
+      "sectorId": "amarelo"
+    },
+    {
+      "id": "v_amarelo_leste",
+      "name": "Acesso Leste - Rua Princesa Isabel",
+      "cx": 2480,
+      "cy": 3040,
+      "sectorId": "amarelo"
     }
   ],
   "corridorLines": [
@@ -1158,6 +1200,240 @@
       "x2": 2442,
       "y2": 3290,
       "sectorId": "azul"
+    },
+    {
+      "id": "line_amarelo_street_dom_manuel",
+      "name": "Av. Dom Manuel",
+      "x1": 530,
+      "y1": 360,
+      "x2": 530,
+      "y2": 3510,
+      "sectorId": "amarelo"
+    },
+    {
+      "id": "line_amarelo_street_25_marco",
+      "name": "Rua 25 de Março",
+      "x1": 638,
+      "y1": 360,
+      "x2": 638,
+      "y2": 3510,
+      "sectorId": "amarelo"
+    },
+    {
+      "id": "line_amarelo_street_coronel_ferraz",
+      "name": "Rua Coronel Ferraz",
+      "x1": 804,
+      "y1": 360,
+      "x2": 804,
+      "y2": 3510,
+      "sectorId": "amarelo"
+    },
+    {
+      "id": "line_amarelo_street_sao_jose",
+      "name": "Rua São José",
+      "x1": 936,
+      "y1": 360,
+      "x2": 936,
+      "y2": 3510,
+      "sectorId": "amarelo"
+    },
+    {
+      "id": "line_amarelo_street_gov_sampaio",
+      "name": "Rua Governador Sampaio",
+      "x1": 1067,
+      "y1": 360,
+      "x2": 1067,
+      "y2": 3510,
+      "sectorId": "amarelo"
+    },
+    {
+      "id": "line_amarelo_street_conde_deu",
+      "name": "Rua Conde d'Eu",
+      "x1": 1199,
+      "y1": 360,
+      "x2": 1199,
+      "y2": 3510,
+      "sectorId": "amarelo"
+    },
+    {
+      "id": "line_amarelo_street_gen_bezerril",
+      "name": "Rua General Bezerril",
+      "x1": 1330,
+      "y1": 360,
+      "x2": 1330,
+      "y2": 3510,
+      "sectorId": "amarelo"
+    },
+    {
+      "id": "line_amarelo_street_floriano_peixoto",
+      "name": "Rua Floriano Peixoto",
+      "x1": 1461,
+      "y1": 360,
+      "x2": 1461,
+      "y2": 3510,
+      "sectorId": "amarelo"
+    },
+    {
+      "id": "line_amarelo_street_major_facundo",
+      "name": "Rua Major Facundo",
+      "x1": 1593,
+      "y1": 360,
+      "x2": 1593,
+      "y2": 3510,
+      "sectorId": "amarelo"
+    },
+    {
+      "id": "line_amarelo_street_barao_rio_branco",
+      "name": "Rua Barão do Rio Branco",
+      "x1": 1724,
+      "y1": 360,
+      "x2": 1724,
+      "y2": 3510,
+      "sectorId": "amarelo"
+    },
+    {
+      "id": "line_amarelo_street_senador_pompeu",
+      "name": "Rua Senador Pompeu",
+      "x1": 1856,
+      "y1": 360,
+      "x2": 1856,
+      "y2": 3510,
+      "sectorId": "amarelo"
+    },
+    {
+      "id": "line_amarelo_street_gen_sampaio",
+      "name": "Rua General Sampaio",
+      "x1": 1986,
+      "y1": 360,
+      "x2": 1986,
+      "y2": 3510,
+      "sectorId": "amarelo"
+    },
+    {
+      "id": "line_amarelo_street_24_maio",
+      "name": "Rua 24 de Maio",
+      "x1": 2118,
+      "y1": 360,
+      "x2": 2118,
+      "y2": 3510,
+      "sectorId": "amarelo"
+    },
+    {
+      "id": "line_amarelo_street_tristao_goncalves",
+      "name": "Rua Tristão Gonçalves",
+      "x1": 2249,
+      "y1": 360,
+      "x2": 2249,
+      "y2": 3510,
+      "sectorId": "amarelo"
+    },
+    {
+      "id": "line_amarelo_street_imperador",
+      "name": "Av. do Imperador",
+      "x1": 2380,
+      "y1": 360,
+      "x2": 2380,
+      "y2": 3510,
+      "sectorId": "amarelo"
+    },
+    {
+      "id": "line_amarelo_street_princesa_isabel",
+      "name": "Rua Princesa Isabel",
+      "x1": 2480,
+      "y1": 360,
+      "x2": 2480,
+      "y2": 3510,
+      "sectorId": "amarelo"
+    },
+    {
+      "id": "line_amarelo_trans_norte",
+      "name": "Corredor Norte (Praça de Alimentação)",
+      "x1": 530,
+      "y1": 360,
+      "x2": 2480,
+      "y2": 360,
+      "sectorId": "amarelo"
+    },
+    {
+      "id": "line_amarelo_trans_alimentacao_mesas",
+      "name": "Transversal Mesas / Alimentação",
+      "x1": 530,
+      "y1": 620,
+      "x2": 2480,
+      "y2": 620,
+      "sectorId": "amarelo"
+    },
+    {
+      "id": "line_amarelo_trans_trans_sup",
+      "name": "Transversal Superior dos Corredores",
+      "x1": 530,
+      "y1": 1120,
+      "x2": 2480,
+      "y2": 1120,
+      "sectorId": "amarelo"
+    },
+    {
+      "id": "line_amarelo_trans_esteira_sup",
+      "name": "Transversal Patamar Superior",
+      "x1": 530,
+      "y1": 1650,
+      "x2": 2480,
+      "y2": 1650,
+      "sectorId": "amarelo"
+    },
+    {
+      "id": "line_amarelo_trans_esteira_centro",
+      "name": "Transversal Central (Esteira / Elevador)",
+      "x1": 530,
+      "y1": 1940,
+      "x2": 2480,
+      "y2": 1940,
+      "sectorId": "amarelo"
+    },
+    {
+      "id": "line_amarelo_trans_esteira_inf",
+      "name": "Transversal Patamar Inferior",
+      "x1": 530,
+      "y1": 2150,
+      "x2": 2480,
+      "y2": 2150,
+      "sectorId": "amarelo"
+    },
+    {
+      "id": "line_amarelo_trans_carapinima",
+      "name": "Av. Carapinima",
+      "x1": 530,
+      "y1": 3040,
+      "x2": 2480,
+      "y2": 3040,
+      "sectorId": "amarelo"
+    },
+    {
+      "id": "line_amarelo_trans_jose_avelino",
+      "name": "Rua José Avelino",
+      "x1": 530,
+      "y1": 3295,
+      "x2": 2480,
+      "y2": 3295,
+      "sectorId": "amarelo"
+    },
+    {
+      "id": "line_amarelo_trans_sul",
+      "name": "Av. Alberto Nepomuceno (Ala Sul)",
+      "x1": 530,
+      "y1": 3510,
+      "x2": 2480,
+      "y2": 3510,
+      "sectorId": "amarelo"
+    },
+    {
+      "id": "line_amarelo_acesso_leste",
+      "name": "Acesso Leste (Estacionamento)",
+      "x1": 2480,
+      "y1": 3040,
+      "x2": 2580,
+      "y2": 3040,
+      "sectorId": "amarelo"
     }
   ]
 }
