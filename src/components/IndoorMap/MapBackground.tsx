@@ -35,6 +35,7 @@ function MapBackground({ children }: MapBackgroundProps) {
     corridorLines,
     addCorridorLine,
     isDrawingCorridor,
+    isAdmin,
   } = useContext(MapDataContext) as MapDataContextType;
 
   const floorplan = SECTOR_FLOORPLANS[activeSector] || floorplanVerde;
@@ -83,6 +84,9 @@ function MapBackground({ children }: MapBackgroundProps) {
 
   function handlePointerDown(e: PointerEvent<SVGSVGElement>) {
     if (e.button !== 0) return;
+
+    // Se não for admin, não permite ações de demarcação ou desenho
+    if (!isAdmin) return;
 
     // 1. Modo: Clicar no mapa para posicionar Ponto de Localização
     if (isAddingPoint) {

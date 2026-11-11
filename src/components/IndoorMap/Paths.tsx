@@ -9,9 +9,10 @@ function Paths() {
     deleteCorridorSubsegment,
     isDrawingCorridor,
     showCorridorLines,
+    isAdmin,
   } = useContext(MapDataContext) as MapDataContextType;
 
-  const visibleCorridors = isDrawingCorridor || showCorridorLines;
+  const visibleCorridors = isAdmin && (isDrawingCorridor || showCorridorLines);
 
   return (
     <g id="Edges">

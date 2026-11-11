@@ -271,6 +271,8 @@ export interface MapDataContextType {
   setIsDrawingCorridor: React.Dispatch<React.SetStateAction<boolean>>;
   showCorridorLines: boolean;
   setShowCorridorLines: React.Dispatch<React.SetStateAction<boolean>>;
+  isAdmin: boolean;
+  setIsAdmin: React.Dispatch<React.SetStateAction<boolean>>;
   importMapData: (data: {
     objects?: ObjectItem[];
     locationPoints?: LocationPoint[];

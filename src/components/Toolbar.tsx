@@ -25,6 +25,7 @@ function Toolbar() {
     setIsDrawingCorridor,
     setIsDemarcating,
     setIsAddingPoint,
+    isAdmin,
   } = useContext(MapDataContext) as MapDataContextType;
 
   return (
@@ -48,38 +49,44 @@ function Toolbar() {
       </Tooltip>
 
       <EditPositionButton />
-      <Tooltip
-        content="Desenhar Retas dos Corredores (Malha de Rotas)"
-        className="bg-orange-600"
-      >
-        <button
-          type="button"
-          onClick={() => {
-            setIsEditMode(false);
-            setIsDemarcating(false);
-            setIsAddingPoint(false);
-            setIsDrawingCorridor((prev) => !prev);
-          }}
-          className={`h-12 w-12 center rounded text-white shadow-sm transition-colors ${
-            isDrawingCorridor
-              ? "bg-orange-600 ring-2 ring-orange-300"
-              : "bg-orange-500 hover:bg-orange-600"
-          }`}
-          aria-label="desenhar retas dos corredores"
-        >
-          <FiGitCommit className="text-lg" />
-        </button>
-      </Tooltip>
-      <Tooltip content="Configurações & Demarcação" className="bg-slate-800">
-        <button
-          type="button"
-          onClick={() => setIsConfigModalOpen(true)}
-          className="h-12 w-12 bg-slate-800 hover:bg-slate-900 center rounded text-white shadow-sm transition-colors"
-          aria-label="configurações e demarcação"
-        >
-          <FiSettings className="text-lg" />
-        </button>
-      </Tooltip>
+
+      {isAdmin && (
+        <>
+          <Tooltip
+            content="Desenhar Retas dos Corredores (Malha de Rotas)"
+            className="bg-orange-600"
+          >
+            <button
+              type="button"
+              onClick={() => {
+                setIsEditMode(false);
+                setIsDemarcating(false);
+                setIsAddingPoint(false);
+                setIsDrawingCorridor((prev) => !prev);
+              }}
+              className={`h-12 w-12 center rounded text-white shadow-sm transition-colors ${
+                isDrawingCorridor
+                  ? "bg-orange-600 ring-2 ring-orange-300"
+                  : "bg-orange-500 hover:bg-orange-600"
+              }`}
+              aria-label="desenhar retas dos corredores"
+            >
+              <FiGitCommit className="text-lg" />
+            </button>
+          </Tooltip>
+          <Tooltip content="Configurações & Demarcação" className="bg-slate-800">
+            <button
+              type="button"
+              onClick={() => setIsConfigModalOpen(true)}
+              className="h-12 w-12 bg-slate-800 hover:bg-slate-900 center rounded text-white shadow-sm transition-colors"
+              aria-label="configurações e demarcação"
+            >
+              <FiSettings className="text-lg" />
+            </button>
+          </Tooltip>
+        </>
+      )}
+
       {navigation.end && isDesktop && <DesktopRouteDetails />}
     </div>
   );

@@ -37,8 +37,34 @@ export const MapDataContext = createContext<MapDataContextType | null>(null);
 const STORAGE_KEY_STORES = "centro-fashion:stores-v3";
 const STORAGE_KEY_LOCATIONS = "centro-fashion:locations-v1";
 const STORAGE_KEY_CORRIDORS = "centro-fashion:corridors-v1";
+const STORAGE_KEY_ADMIN = "centro-fashion:admin";
 const DEFAULT_POSITION = "v_pedro_pereira_centro";
 const SUPPORTED_SECTORS: SectorId[] = ["verde", "azul", "amarelo", "roxo", "branco"];
+
+function loadAdminMode(searchParams: URLSearchParams): boolean {
+  const param = searchParams.get("admin");
+  if (param === "true" || param === "1") {
+    try {
+      localStorage.setItem(STORAGE_KEY_ADMIN, "true");
+    } catch {
+      /* ignore */
+    }
+    return true;
+  }
+  if (param === "false" || param === "0") {
+    try {
+      localStorage.removeItem(STORAGE_KEY_ADMIN);
+    } catch {
+      /* ignore */
+    }
+    return false;
+  }
+  try {
+    return localStorage.getItem(STORAGE_KEY_ADMIN) === "true";
+  } catch {
+    return false;
+  }
+}
 
 function normalizeSector(sectorId?: string): SectorId {
   if (
@@ -187,6 +213,33 @@ function Map() {
   const [searchParams, setSearchParams] = useSearchParams();
   const initialSector = normalizeSector(searchParams.get("sector") || "verde");
   const rawPosition = searchParams.get("position");
+  const [isAdmin, setIsAdmin] = useState<boolean>(() => loadAdminMode(searchParams));
+
+  // Atalho de teclado: Ctrl + Shift + A para alternar entre modo visitante e modo admin
+  useEffect(() => {
+    function handleKeyDown(e: KeyboardEvent) {
+      if (e.ctrlKey && e.shiftKey && (e.key === "A" || e.key === "a")) {
+        e.preventDefault();
+        setIsAdmin((prev) => {
+          const next = !prev;
+          try {
+            if (next) {
+              localStorage.setItem(STORAGE_KEY_ADMIN, "true");
+              toast.success("Modo Administrador ATIVADO!");
+            } else {
+              localStorage.removeItem(STORAGE_KEY_ADMIN);
+              toast.info("Modo Administrador DESATIVADO (Visão Visitante)");
+            }
+          } catch {
+            /* ignore */
+          }
+          return next;
+        });
+      }
+    }
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, []);
 
   // CRUD Lojas / Estabelecimentos (Todos os setores)
   const [storeList, setStoreList] = useState<ObjectItem[]>(loadStores);
@@ -863,6 +916,8 @@ function Map() {
     setIsDrawingCorridor,
     showCorridorLines,
     setShowCorridorLines,
+    isAdmin,
+    setIsAdmin,
     importMapData,
   };
 

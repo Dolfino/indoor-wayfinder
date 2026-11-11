@@ -1,6 +1,7 @@
 import logo from "../assets/img/pathpal-logo.svg";
 import { FiChevronRight, FiPlus, FiSettings, FiArrowRight } from "react-icons/fi";
-import { useContext, useEffect, useState } from "react";
+import { useContext, useEffect, useState, useRef } from "react";
+import { toast } from "react-toastify";
 import {
   MapDataContextType,
   NavigationContextType,
@@ -32,10 +33,42 @@ function Sidebar() {
     objects,
     setIsConfigModalOpen,
     navigateToStoreAcrossSectors,
+    isAdmin,
+    setIsAdmin,
   } = useContext(MapDataContext) as MapDataContextType;
   const [parsedObjects, setParsedObjects] = useState<ParsedObjects>({});
   const [isRotating, setIsRotating] = useState(false);
   const [showAllSectors, setShowAllSectors] = useState(false);
+  const [logoClicks, setLogoClicks] = useState(0);
+  const clickTimeoutRef = useRef<number | null>(null);
+
+  function handleLogoClick() {
+    setIsRotating(true);
+    const next = logoClicks + 1;
+    if (clickTimeoutRef.current) clearTimeout(clickTimeoutRef.current);
+
+    if (next >= 5) {
+      setLogoClicks(0);
+      setIsAdmin((prev) => {
+        const updated = !prev;
+        try {
+          if (updated) {
+            localStorage.setItem("centro-fashion:admin", "true");
+            toast.success("Modo Administrador ATIVADO!");
+          } else {
+            localStorage.removeItem("centro-fashion:admin");
+            toast.info("Modo Administrador DESATIVADO (Visão Visitante)");
+          }
+        } catch {
+          /* ignore */
+        }
+        return updated;
+      });
+    } else {
+      setLogoClicks(next);
+      clickTimeoutRef.current = window.setTimeout(() => setLogoClicks(0), 2000);
+    }
+  }
 
   const displayedList = showAllSectors ? allObjects : objects;
   const currentSectorMeta = SECTOR_META_MAP[activeSector];
@@ -85,8 +118,9 @@ function Sidebar() {
               src={logo}
               alt="Centro Fashion"
               className={`cursor-pointer ${isRotating ? "rotate" : ""}`}
-              onClick={() => setIsRotating(true)}
+              onClick={handleLogoClick}
               onAnimationEnd={() => setIsRotating(false)}
+              title={isAdmin ? "Modo Administrador Ativo (5 cliques para alternar)" : "Centro Fashion Fortaleza"}
             />
           </div>
           <div className="flex flex-col">
@@ -160,25 +194,39 @@ function Sidebar() {
 
       <div className="overflow-auto h-full pr-1">
         {displayedList.length === 0 ? (
-          <div className="flex flex-col items-center justify-center text-center p-6 mt-8 bg-gray-50 border border-dashed border-gray-200 rounded-2xl">
-            <div className="w-12 h-12 rounded-full bg-emerald-100 center text-emerald-700 text-xl mb-3">
-              <FiPlus />
+          isAdmin ? (
+            <div className="flex flex-col items-center justify-center text-center p-6 mt-8 bg-gray-50 border border-dashed border-gray-200 rounded-2xl">
+              <div className="w-12 h-12 rounded-full bg-emerald-100 center text-emerald-700 text-xl mb-3">
+                <FiPlus />
+              </div>
+              <h3 className="font-bold text-gray-800 text-base mb-1">
+                {currentSectorMeta.name} Limpo & Pronto
+              </h3>
+              <p className="text-xs text-gray-500 mb-4 max-w-[240px]">
+                Nenhum local cadastrado no {currentSectorMeta.name} ainda. Clique abaixo ou na engrenagem no topo para demarcar lojas, acessos e corredores!
+              </p>
+              <button
+                type="button"
+                onClick={() => setIsConfigModalOpen(true)}
+                className="flex items-center gap-2 px-4 py-2 text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 rounded-lg shadow-sm transition-colors"
+              >
+                <FiSettings className="text-sm" />
+                <span>Configurar {currentSectorMeta.name}</span>
+              </button>
             </div>
-            <h3 className="font-bold text-gray-800 text-base mb-1">
-              {currentSectorMeta.name} Limpo & Pronto
-            </h3>
-            <p className="text-xs text-gray-500 mb-4 max-w-[240px]">
-              Nenhum local cadastrado no {currentSectorMeta.name} ainda. Clique abaixo ou na engrenagem no topo para demarcar lojas, acessos e corredores!
-            </p>
-            <button
-              type="button"
-              onClick={() => setIsConfigModalOpen(true)}
-              className="flex items-center gap-2 px-4 py-2 text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 rounded-lg shadow-sm transition-colors"
-            >
-              <FiSettings className="text-sm" />
-              <span>Configurar {currentSectorMeta.name}</span>
-            </button>
-          </div>
+          ) : (
+            <div className="flex flex-col items-center justify-center text-center p-6 mt-8 bg-white border border-gray-100 rounded-2xl shadow-sm">
+              <div className="w-12 h-12 rounded-full bg-blue-50 center text-blue-600 text-xl mb-3">
+                📍
+              </div>
+              <h3 className="font-bold text-gray-800 text-base mb-1">
+                Mapa do {currentSectorMeta.name}
+              </h3>
+              <p className="text-xs text-gray-500 max-w-[240px]">
+                Utilize a barra de busca acima para localizar boxes, praça de alimentação e serviços em todo o shopping!
+              </p>
+            </div>
+          )
         ) : (
           Object.keys(parsedObjects)
             .sort()
