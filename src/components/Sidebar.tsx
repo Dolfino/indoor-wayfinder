@@ -98,16 +98,18 @@ function Sidebar() {
   }
 
   return (
-    <aside className="flex flex-col rounded-none w-[35rem] h-screen p-3 bg-white shadow-xl shadow-gray-200 -translate-x-full transform transition-transform duration-150 ease-in lg:translate-x-0 lg:shadow-md z-20">
+    <aside className="flex flex-col rounded-none w-80 xl:w-96 flex-none h-screen p-3 bg-white shadow-xl shadow-gray-200 -translate-x-full transform transition-transform duration-150 ease-in lg:translate-x-0 lg:shadow-md z-20">
       <header className="flex flex-col mb-3 pr-1 border-b pb-3 w-full">
         <div
-          className={`flex items-center justify-between p-2 mb-2.5 border rounded-lg text-xs font-semibold ${currentSectorMeta.headerBgClass}`}
+          className={`flex items-center justify-between gap-2 p-2 mb-2.5 border rounded-lg text-xs font-semibold ${currentSectorMeta.headerBgClass}`}
         >
-          <div className="flex items-center">
+          <div className="flex items-center min-w-0">
             <FaMapMarkerAlt className="w-4 h-4 mr-2 flex-none" />
-            <span>Centro Fashion Fortaleza • {currentSectorMeta.name}</span>
+            <span className="truncate">
+              Centro Fashion • {currentSectorMeta.name}
+            </span>
           </div>
-          <span className="text-[10px] font-bold uppercase px-2 py-0.5 rounded bg-white/80">
+          <span className="text-[10px] font-bold uppercase px-2 py-0.5 rounded bg-white/80 whitespace-nowrap flex-none">
             5 Setores
           </span>
         </div>
@@ -123,11 +125,11 @@ function Sidebar() {
               title={isAdmin ? "Modo Administrador Ativo (5 cliques para alternar)" : "Centro Fashion Fortaleza"}
             />
           </div>
-          <div className="flex flex-col">
-            <p className="text-xl font-bold text-gray-900 pl-3">
+          <div className="flex flex-col min-w-0">
+            <p className="text-xl font-bold text-gray-900 pl-3 truncate">
               Centro Fashion
             </p>
-            <p className="text-xs font-semibold text-gray-600 pl-3">
+            <p className="text-xs font-semibold text-gray-600 pl-3 truncate">
               {currentSectorMeta.name} • Wayfinding Multi-Setor
             </p>
           </div>
@@ -135,12 +137,12 @@ function Sidebar() {
 
         {/* Seletor Rápido dos 5 Setores */}
         <div className="flex flex-col gap-1.5">
-          <div className="flex items-center justify-between text-[11px] font-bold text-gray-500 px-0.5">
-            <span>SELECIONE O SETOR DO MAPA:</span>
+          <div className="flex items-center justify-between gap-2 text-[11px] font-bold text-gray-500 px-0.5">
+            <span className="whitespace-nowrap">SETOR DO MAPA:</span>
             <button
               type="button"
               onClick={() => setShowAllSectors((prev) => !prev)}
-              className={`text-[11px] font-semibold px-2 py-0.5 rounded transition-colors ${
+              className={`text-[11px] font-semibold px-2 py-0.5 rounded transition-colors whitespace-nowrap truncate ${
                 showAllSectors
                   ? "bg-blue-100 text-blue-800"
                   : "text-blue-600 hover:bg-blue-50"
@@ -148,10 +150,10 @@ function Sidebar() {
             >
               {showAllSectors
                 ? `Mostrando Todos (${allObjects.length})`
-                : `Ver Locais de Todos os Setores`}
+                : "Ver Todos os Setores"}
             </button>
           </div>
-          <div className="grid grid-cols-5 gap-1">
+          <div className="flex flex-wrap gap-1.5">
             {SECTORS.map((sec) => {
               const isActive = sec.id === activeSector;
               const count = allObjects.filter(
@@ -162,14 +164,14 @@ function Sidebar() {
                   key={sec.id}
                   type="button"
                   onClick={() => setActiveSector(sec.id)}
-                  className={`flex flex-col items-center justify-center py-1.5 px-1 rounded-lg border text-[11px] font-bold transition-all ${
+                  className={`flex flex-col items-center justify-center flex-1 min-w-[88px] overflow-hidden py-1.5 px-2 rounded-lg border text-[11px] font-bold transition-all ${
                     isActive
                       ? sec.activeBtnClass
                       : "bg-gray-50 text-gray-700 border-gray-200 hover:bg-gray-100"
                   }`}
                   title={`Mudar mapa para ${sec.name}`}
                 >
-                  <div className="flex items-center gap-1">
+                  <div className="flex items-center justify-center gap-1.5 w-full min-w-0">
                     <span
                       className="w-2 h-2 rounded-full flex-none"
                       style={{
@@ -179,7 +181,7 @@ function Sidebar() {
                     <span className="truncate">{sec.shortName}</span>
                   </div>
                   <span
-                    className={`text-[9px] font-medium ${
+                    className={`text-[10px] font-medium whitespace-nowrap ${
                       isActive ? "text-white/90" : "text-gray-400"
                     }`}
                   >
