@@ -90,6 +90,25 @@ export const CORRIDOR_TRANSVERSAIS_AMARELO = [
 export const CORRIDOR_STREETS_ROXO = CORRIDOR_STREETS_AMARELO;
 export const CORRIDOR_TRANSVERSAIS_ROXO = CORRIDOR_TRANSVERSAIS_AMARELO;
 
+export const CORRIDOR_STREETS_BRANCO = [
+  { id: "antonio_pompeu", name: "Rua Antônio Pompeu", x: 432 },
+  { id: "meton_alencar", name: "Rua Meton de Alencar", x: 540 },
+  { id: "liberato_barroso", name: "Rua Liberato Barroso", x: 1377 },
+  { id: "guilherme_rocha", name: "Rua Guilherme Rocha", x: 1477 },
+  { id: "senador_jaguaribe", name: "Rua Senador Jaguaribe", x: 2410 },
+  { id: "castelo_branco", name: "Av. Pres. Castelo Branco", x: 2520 },
+];
+
+export const CORRIDOR_TRANSVERSAIS_BRANCO = [
+  { id: "13_maio", name: "Av. 13 de Maio", y: 280 },
+  { id: "baturite", name: "Tv. Baturité", y: 615 },
+  { id: "domingos_olimpio", name: "Av. Domingos Olímpio", y: 1153 },
+  { id: "para", name: "Tv. Pará", y: 1650 },
+  { id: "monsenhor_tabosa", name: "Av. Monsenhor Tabosa", y: 2152 },
+  { id: "esteira_patamar", name: "Transversal Esteira Rolante / Elevador", y: 2370 },
+  { id: "ala_sul", name: "Ala Sul (Área de Eventos / Estacionamento)", y: 2750 },
+];
+
 export const SOUTH_AISLE = {
   y: 3036,
   streets: [
@@ -141,6 +160,18 @@ export function getDefaultLocationPoints(sector: SectorId = "verde"): LocationPo
       { id: "v_roxo_alimentacao", name: "Praça de Alimentação", cx: 1461, cy: 360, sectorId: "roxo" },
       { id: "v_roxo_carapinima", name: "Av. Carapinima - Acesso Sul", cx: 1461, cy: 3040, sectorId: "roxo" },
       { id: "v_roxo_leste", name: "Acesso Leste - Rua Princesa Isabel", cx: 2480, cy: 3040, sectorId: "roxo" },
+    ];
+  }
+
+  if (sector === "branco") {
+    return [
+      { id: "v_branco_entrada_norte", name: "Entrada Norte - Av. 13 de Maio", cx: 1427, cy: 280, sectorId: "branco" },
+      { id: "v_branco_domingos_olimpio", name: "Av. Domingos Olímpio - Centro", cx: 1427, cy: 1153, sectorId: "branco" },
+      { id: "v_branco_para", name: "Tv. Pará - Centro", cx: 1427, cy: 1650, sectorId: "branco" },
+      { id: "v_branco_esteira", name: "Acesso Esteira Rolante / Elevador", cx: 1050, cy: 2370, sectorId: "branco" },
+      { id: "v_branco_monsenhor_tabosa", name: "Av. Monsenhor Tabosa", cx: 1427, cy: 2152, sectorId: "branco" },
+      { id: "v_branco_ala_sul", name: "Ala Sul - Estacionamento", cx: 1427, cy: 2750, sectorId: "branco" },
+      { id: "v_branco_leste", name: "Acesso Leste - Av. Pres. Castelo Branco", cx: 2520, cy: 1650, sectorId: "branco" },
     ];
   }
 
@@ -303,6 +334,35 @@ export function getDefaultCorridorLines(sector: SectorId = "verde"): CorridorLin
       x2: 2580,
       y2: 3040,
       sectorId: "roxo",
+    });
+
+    return lines;
+  }
+
+  if (sector === "branco") {
+    const lines: CorridorLine[] = [];
+    CORRIDOR_STREETS_BRANCO.forEach((s) => {
+      lines.push({
+        id: `line_branco_street_${s.id}`,
+        name: s.name,
+        x1: s.x,
+        y1: 280,
+        x2: s.x,
+        y2: 2750,
+        sectorId: "branco",
+      });
+    });
+
+    CORRIDOR_TRANSVERSAIS_BRANCO.forEach((t) => {
+      lines.push({
+        id: `line_branco_trans_${t.id}`,
+        name: t.name,
+        x1: 432,
+        y1: t.y,
+        x2: 2520,
+        y2: t.y,
+        sectorId: "branco",
+      });
     });
 
     return lines;

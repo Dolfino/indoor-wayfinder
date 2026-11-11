@@ -619,6 +619,55 @@
       "cx": 2480,
       "cy": 3040,
       "sectorId": "roxo"
+    },
+    {
+      "id": "v_branco_entrada_norte",
+      "name": "Entrada Norte - Av. 13 de Maio",
+      "cx": 1427,
+      "cy": 280,
+      "sectorId": "branco"
+    },
+    {
+      "id": "v_branco_domingos_olimpio",
+      "name": "Av. Domingos Olímpio - Centro",
+      "cx": 1427,
+      "cy": 1153,
+      "sectorId": "branco"
+    },
+    {
+      "id": "v_branco_para",
+      "name": "Tv. Pará - Centro",
+      "cx": 1427,
+      "cy": 1650,
+      "sectorId": "branco"
+    },
+    {
+      "id": "v_branco_esteira",
+      "name": "Acesso Esteira Rolante / Elevador",
+      "cx": 1050,
+      "cy": 2370,
+      "sectorId": "branco"
+    },
+    {
+      "id": "v_branco_monsenhor_tabosa",
+      "name": "Av. Monsenhor Tabosa",
+      "cx": 1427,
+      "cy": 2152,
+      "sectorId": "branco"
+    },
+    {
+      "id": "v_branco_ala_sul",
+      "name": "Ala Sul - Estacionamento",
+      "cx": 1427,
+      "cy": 2750,
+      "sectorId": "branco"
+    },
+    {
+      "id": "v_branco_leste",
+      "name": "Acesso Leste - Av. Pres. Castelo Branco",
+      "cx": 2520,
+      "cy": 1650,
+      "sectorId": "branco"
     }
   ],
   "corridorLines": [
@@ -1710,6 +1759,123 @@
       "x2": 2580,
       "y2": 3040,
       "sectorId": "roxo"
+    },
+    {
+      "id": "line_branco_street_antonio_pompeu",
+      "name": "Rua Antônio Pompeu",
+      "x1": 432,
+      "y1": 280,
+      "x2": 432,
+      "y2": 2750,
+      "sectorId": "branco"
+    },
+    {
+      "id": "line_branco_street_meton_alencar",
+      "name": "Rua Meton de Alencar",
+      "x1": 540,
+      "y1": 280,
+      "x2": 540,
+      "y2": 2750,
+      "sectorId": "branco"
+    },
+    {
+      "id": "line_branco_street_liberato_barroso",
+      "name": "Rua Liberato Barroso",
+      "x1": 1377,
+      "y1": 280,
+      "x2": 1377,
+      "y2": 2750,
+      "sectorId": "branco"
+    },
+    {
+      "id": "line_branco_street_guilherme_rocha",
+      "name": "Rua Guilherme Rocha",
+      "x1": 1477,
+      "y1": 280,
+      "x2": 1477,
+      "y2": 2750,
+      "sectorId": "branco"
+    },
+    {
+      "id": "line_branco_street_senador_jaguaribe",
+      "name": "Rua Senador Jaguaribe",
+      "x1": 2410,
+      "y1": 280,
+      "x2": 2410,
+      "y2": 2750,
+      "sectorId": "branco"
+    },
+    {
+      "id": "line_branco_street_castelo_branco",
+      "name": "Av. Pres. Castelo Branco",
+      "x1": 2520,
+      "y1": 280,
+      "x2": 2520,
+      "y2": 2750,
+      "sectorId": "branco"
+    },
+    {
+      "id": "line_branco_trans_13_maio",
+      "name": "Av. 13 de Maio",
+      "x1": 432,
+      "y1": 280,
+      "x2": 2520,
+      "y2": 280,
+      "sectorId": "branco"
+    },
+    {
+      "id": "line_branco_trans_baturite",
+      "name": "Tv. Baturité",
+      "x1": 432,
+      "y1": 615,
+      "x2": 2520,
+      "y2": 615,
+      "sectorId": "branco"
+    },
+    {
+      "id": "line_branco_trans_domingos_olimpio",
+      "name": "Av. Domingos Olímpio",
+      "x1": 432,
+      "y1": 1153,
+      "x2": 2520,
+      "y2": 1153,
+      "sectorId": "branco"
+    },
+    {
+      "id": "line_branco_trans_para",
+      "name": "Tv. Pará",
+      "x1": 432,
+      "y1": 1650,
+      "x2": 2520,
+      "y2": 1650,
+      "sectorId": "branco"
+    },
+    {
+      "id": "line_branco_trans_monsenhor_tabosa",
+      "name": "Av. Monsenhor Tabosa",
+      "x1": 432,
+      "y1": 2152,
+      "x2": 2520,
+      "y2": 2152,
+      "sectorId": "branco"
+    },
+    {
+      "id": "line_branco_trans_esteira_patamar",
+      "name": "Transversal Esteira Rolante / Elevador",
+      "x1": 432,
+      "y1": 2370,
+      "x2": 2520,
+      "y2": 2370,
+      "sectorId": "branco"
+    },
+    {
+      "id": "line_branco_trans_ala_sul",
+      "name": "Ala Sul (Área de Eventos / Estacionamento)",
+      "x1": 432,
+      "y1": 2750,
+      "x2": 2520,
+      "y2": 2750,
+      "sectorId": "branco"
     }
   ]
 }
