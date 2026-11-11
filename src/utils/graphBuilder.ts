@@ -87,6 +87,9 @@ export const CORRIDOR_TRANSVERSAIS_AMARELO = [
   { id: "sul", name: "Av. Alberto Nepomuceno (Ala Sul)", y: 3510 },
 ];
 
+export const CORRIDOR_STREETS_ROXO = CORRIDOR_STREETS_AMARELO;
+export const CORRIDOR_TRANSVERSAIS_ROXO = CORRIDOR_TRANSVERSAIS_AMARELO;
+
 export const SOUTH_AISLE = {
   y: 3036,
   streets: [
@@ -127,6 +130,17 @@ export function getDefaultLocationPoints(sector: SectorId = "verde"): LocationPo
       { id: "v_amarelo_alimentacao", name: "Praça de Alimentação", cx: 1461, cy: 360, sectorId: "amarelo" },
       { id: "v_amarelo_carapinima", name: "Av. Carapinima - Acesso Sul", cx: 1461, cy: 3040, sectorId: "amarelo" },
       { id: "v_amarelo_leste", name: "Acesso Leste - Rua Princesa Isabel", cx: 2480, cy: 3040, sectorId: "amarelo" },
+    ];
+  }
+
+  if (sector === "roxo") {
+    return [
+      { id: "v_roxo_entrada_sul", name: "Entrada Sul - Av. Alberto Nepomuceno", cx: 1461, cy: 3510, sectorId: "roxo" },
+      { id: "v_roxo_centro", name: "Corredor Central - Floriano Peixoto", cx: 1461, cy: 1940, sectorId: "roxo" },
+      { id: "v_roxo_esteira", name: "Acesso Esteira Rolante / Elevador", cx: 1199, cy: 1940, sectorId: "roxo" },
+      { id: "v_roxo_alimentacao", name: "Praça de Alimentação", cx: 1461, cy: 360, sectorId: "roxo" },
+      { id: "v_roxo_carapinima", name: "Av. Carapinima - Acesso Sul", cx: 1461, cy: 3040, sectorId: "roxo" },
+      { id: "v_roxo_leste", name: "Acesso Leste - Rua Princesa Isabel", cx: 2480, cy: 3040, sectorId: "roxo" },
     ];
   }
 
@@ -249,6 +263,46 @@ export function getDefaultCorridorLines(sector: SectorId = "verde"): CorridorLin
       x2: 2580,
       y2: 3040,
       sectorId: "amarelo",
+    });
+
+    return lines;
+  }
+
+  if (sector === "roxo") {
+    const lines: CorridorLine[] = [];
+    CORRIDOR_STREETS_ROXO.forEach((s) => {
+      lines.push({
+        id: `line_roxo_street_${s.id}`,
+        name: s.name,
+        x1: s.x,
+        y1: 360,
+        x2: s.x,
+        y2: 3510,
+        sectorId: "roxo",
+      });
+    });
+
+    CORRIDOR_TRANSVERSAIS_ROXO.forEach((t) => {
+      lines.push({
+        id: `line_roxo_trans_${t.id}`,
+        name: t.name,
+        x1: 530,
+        y1: t.y,
+        x2: 2480,
+        y2: t.y,
+        sectorId: "roxo",
+      });
+    });
+
+    // Acesso Leste (Estacionamento / Sanitários)
+    lines.push({
+      id: "line_roxo_acesso_leste",
+      name: "Acesso Leste (Estacionamento)",
+      x1: 2480,
+      y1: 3040,
+      x2: 2580,
+      y2: 3040,
+      sectorId: "roxo",
     });
 
     return lines;

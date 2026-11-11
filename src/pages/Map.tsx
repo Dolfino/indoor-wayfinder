@@ -38,7 +38,7 @@ const STORAGE_KEY_STORES = "centro-fashion:stores-v3";
 const STORAGE_KEY_LOCATIONS = "centro-fashion:locations-v1";
 const STORAGE_KEY_CORRIDORS = "centro-fashion:corridors-v1";
 const DEFAULT_POSITION = "v_pedro_pereira_centro";
-const SUPPORTED_SECTORS: SectorId[] = ["verde", "azul", "amarelo"];
+const SUPPORTED_SECTORS: SectorId[] = ["verde", "azul", "amarelo", "roxo"];
 
 function normalizeSector(sectorId?: string): SectorId {
   if (
