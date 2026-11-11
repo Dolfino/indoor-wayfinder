@@ -927,12 +927,12 @@ function Map() {
         <div className="flex bg-gray-100 text-gray-800 relative overflow-hidden w-full h-screen">
           {isDesktop && <Sidebar />}
           <main
-            className={`flex flex-1 min-w-0 ${
+            className={`flex flex-1 min-w-0 h-full ${
               isDesktop ? "-ml-80 lg:ml-0" : ""
-            } justify-center flex-col md:p-6 p-2 transition-all duration-150 ease-in`}
+            } flex-col md:p-6 p-2 transition-all duration-150 ease-in overflow-hidden`}
           >
             <Toolbar />
-            <div className="center w-full h-full">
+            <div className="center flex-1 min-h-0 w-full overflow-hidden rounded-xl shadow-sm bg-white">
               <IndoorMapWrapper />
             </div>
           </main>

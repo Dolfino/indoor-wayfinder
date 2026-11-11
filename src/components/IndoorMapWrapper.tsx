@@ -89,7 +89,7 @@ function IndoorMapWrapper() {
   }
 
   return (
-    <div className="relative w-full h-full bg-white center">
+    <div className="relative w-full h-full bg-white center overflow-hidden">
       <ObjectDetailsModal
         open={modalOpen}
         object={object}

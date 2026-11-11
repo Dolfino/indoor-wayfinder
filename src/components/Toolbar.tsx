@@ -29,7 +29,7 @@ function Toolbar() {
   } = useContext(MapDataContext) as MapDataContextType;
 
   return (
-    <div className="flex flex-wrap gap-2 mb-4 min-h-12 relative items-center">
+    <div className="flex flex-none flex-wrap gap-2 mb-3 relative z-20 items-center">
       <SearchBar />
 
       {/* Seletor rápido de Setor (útil em mobile e desktop) */}
@@ -38,7 +38,7 @@ function Toolbar() {
           value={activeSector}
           onChange={(e) => setActiveSector(e.target.value as SectorId)}
           aria-label="Selecionar setor do mapa"
-          className="h-12 px-3 rounded bg-white border border-gray-200 text-xs font-bold text-gray-800 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer"
+          className="h-12 px-2.5 rounded bg-white border border-gray-200 text-xs font-bold text-gray-800 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer flex-none"
         >
           {SECTORS.map((sec) => (
             <option key={sec.id} value={sec.id}>

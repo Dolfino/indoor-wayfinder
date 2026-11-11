@@ -126,19 +126,19 @@ function SearchBar() {
   }
 
   return (
-    <div className="md:w-96 w-full flex flex-row">
-      <div className="flex flex-inline rounded w-full">
-        <div className="h-12 w-12 center flex-none rounded-l bg-white text-blue-500 text-[8px] ">
-          <div className="w-full h-8 center border-gray-300 border-r">
+    <div className="w-full md:w-72 xl:w-96 flex flex-row min-w-0">
+      <div className="flex flex-inline rounded w-full shadow-sm border border-gray-200 bg-white">
+        <div className="h-12 w-11 center flex-none rounded-l bg-white text-blue-500 text-[8px]">
+          <div className="w-full h-8 center border-gray-200 border-r">
             <FiCircle />
           </div>
         </div>
-        <div className="flex w-full relative">
+        <div className="flex flex-1 min-w-0 relative">
           <input
-            className={`h-12 p-4 w-full flex-none text-gray-900 text-sm md:text-md ${
+            className={`h-12 px-3 w-full min-w-0 flex-1 text-gray-900 text-sm focus:outline-none ${
               isInputInvalid && "input-error"
-            } `}
-            placeholder="Buscar loja, box ou serviço em qualquer setor..."
+            }`}
+            placeholder="Buscar loja, box ou serviço..."
             value={inputValue}
             onChange={handleInputChange}
             onBlur={handleInputBlur}

@@ -21,7 +21,7 @@ function EditPositionButton() {
     <Tooltip content="Mudar Posição (Você está aqui)" className="bg-green-500">
       <button
         data-tooltip-target="tooltip-default"
-        className="ml-1 h-12 w-12 bg-green-500 center rounded text-white"
+        className="h-12 w-12 bg-green-500 hover:bg-green-600 center rounded text-white shadow-sm transition-colors flex-none"
         onClick={() => handleEdit()}
         aria-label="change position"
       >

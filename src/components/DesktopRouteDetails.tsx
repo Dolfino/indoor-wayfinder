@@ -19,8 +19,8 @@ function DesktopRouteDetails() {
     : null;
 
   return (
-    <div className="md:w-fit md:visible invisible hidden md:flex flex-row pl-2">
-      <div className="flex flex-inline items-center rounded w-full bg-white navigation-info-pulse shadow-sm">
+    <div className="md:w-fit md:visible invisible hidden md:flex flex-row max-w-full">
+      <div className="flex flex-inline items-center rounded w-full bg-white border border-blue-100 navigation-info-pulse shadow-sm">
         <div className="w-12 h-12 center flex-none rounded-l text-blue-500 text-xl">
           <TbRoute />
         </div>
