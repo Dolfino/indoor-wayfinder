@@ -1,0 +1,9 @@
+node_modules
+dist
+.git
+.github
+Acesso_SSH
+*.log
+.env*
+.vscode
+.idea
