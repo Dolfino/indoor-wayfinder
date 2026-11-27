@@ -14,6 +14,7 @@ import ObjectDetailsModal from "./ObjectDetailsDialog";
 import { navigateToObject, resetEdges } from "@/utils/navigationHelper";
 import { toast } from "react-toastify";
 import { FiX, FiCheckCircle, FiMapPin, FiArrowRight } from "react-icons/fi";
+import { adminOnly } from "@/utils/adminAccess";
 
 function IndoorMapWrapper() {
   const [modalOpen, setModalOpen] = useState(false);
@@ -38,6 +39,7 @@ function IndoorMapWrapper() {
     setEditingLocationPoint,
     isDrawingCorridor,
     setIsDrawingCorridor,
+    isAdmin,
   } = useContext(MapDataContext) as MapDataContextType;
 
   function handleObjectClick(store: ObjectItem) {
@@ -95,7 +97,7 @@ function IndoorMapWrapper() {
         object={object}
         onClose={() => setModalOpen((cur) => !cur)}
         objectNavigation={handleNavigationClick}
-        onEditStore={handleEditStoreClick}
+        onEditStore={adminOnly(isAdmin, handleEditStoreClick)}
         onEnterPortalSector={
           object?.portalToSectorId
             ? () => handlePortalSwitchSector(object)

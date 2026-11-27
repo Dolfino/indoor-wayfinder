@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build --emptyOutDir",
+    "test": "node --experimental-strip-types --test tests/*.test.ts",
     "preview": "vite preview",
     "devnhost": "vite --host"
   },
@@ -15,7 +16,7 @@
     "react-device-detect": "^2.2.3",
     "react-dom": "^18.2.0",
     "react-icons": "^4.11.0",
-    "react-router-dom": "^6.18.0",
+    "react-router-dom": "^6.30.6",
     "react-toastify": "^10.0.4",
     "react-zoom-pan-pinch": "^3.4.4",
     "usehooks-ts": "^2.9.4"
