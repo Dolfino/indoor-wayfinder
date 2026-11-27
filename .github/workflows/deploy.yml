@@ -50,14 +50,6 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
-      - name: Restart Deployment on VPS
-        if: ${{ env.VPS_SSH_KEY != '' }}
-        env:
-          VPS_SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
-        uses: appleboy/ssh-action@v1.0.3
-        with:
-          host: 103.199.187.141
-          username: root
-          key: ${{ secrets.VPS_SSH_KEY }}
-          script: |
-            k3s kubectl rollout restart deployment/sistema-centro-fashion-web -n business
+      # Production is deployed by Argo CD from the immutable image digest pinned
+      # in Dolfino/vps-k8s-infra. Do not restart the current digest here: doing so
+      # would cause needless pod churn without deploying the image built above.
